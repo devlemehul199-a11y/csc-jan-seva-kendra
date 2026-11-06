@@ -1,0 +1,133 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "VLE Jan Seva Kendra profile associated with the authenticated user account.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Unique identifier of the authenticated user."
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Email address of the VLE user."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Display name of the user."
+        },
+        "centerName": {
+          "type": "string",
+          "description": "Name of the Jan Seva Kendra / CSC center."
+        },
+        "vleName": {
+          "type": "string",
+          "description": "Name of the VLE owner."
+        },
+        "cscId": {
+          "type": "string",
+          "description": "CSC ID number."
+        },
+        "phone": {
+          "type": "string",
+          "description": "Contact phone number."
+        },
+        "openingCash": {
+          "type": "number",
+          "description": "Starting cash-in-hand float."
+        },
+        "openingBank": {
+          "type": "number",
+          "description": "Starting bank/UPI balance."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when the user profile was created."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when the user profile was last updated."
+        }
+      },
+      "required": ["userId", "createdAt"]
+    },
+    "Transaction": {
+      "title": "Transaction",
+      "description": "Daily Day-Book financial transaction recorded by the VLE.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "UID of the VLE owning this transaction."
+        },
+        "type": {
+          "type": "string",
+          "enum": ["INCOME", "EXPENSE"],
+          "description": "Transaction direction."
+        },
+        "category": {
+          "type": "string",
+          "description": "Service or expense category identifier."
+        },
+        "amount": {
+          "type": "number",
+          "description": "Transaction monetary amount in rupees."
+        },
+        "paymentMode": {
+          "type": "string",
+          "enum": ["CASH", "ONLINE_UPI", "BANK_TRANSFER"],
+          "description": "Payment instrument used."
+        },
+        "customerName": {
+          "type": "string",
+          "description": "Customer or beneficiary name."
+        },
+        "customerPhone": {
+          "type": "string",
+          "description": "Customer contact mobile."
+        },
+        "referenceNo": {
+          "type": "string",
+          "description": "Receipt or acknowledgement reference number."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Additional notes or description."
+        },
+        "aepsCashGiven": {
+          "type": "number",
+          "description": "Cash handed to client for AEPS withdrawal."
+        },
+        "dateString": {
+          "type": "string",
+          "description": "ISO date string formatted as YYYY-MM-DD."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when the record was created."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when the record was last updated."
+        }
+      },
+      "required": ["userId", "type", "category", "amount", "paymentMode", "dateString", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "VLE center profile and initial floats"
+    },
+    "/users/{userId}/transactions/{transactionId}": {
+      "schema": "Transaction",
+      "description": "Day-Book income and expense transaction records for the authenticated user"
+    }
+  }
+}

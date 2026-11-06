@@ -1,0 +1,107 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global default-deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Validation helper for UserProfile
+    function isValidUserProfile(data) {
+      return data.userId is string && data.userId.size() <= 128 &&
+             (!('email' in data) || data.email == null || (data.email is string && data.email.size() <= 256)) &&
+             (!('displayName' in data) || data.displayName == null || (data.displayName is string && data.displayName.size() <= 128)) &&
+             (!('centerName' in data) || data.centerName == null || (data.centerName is string && data.centerName.size() <= 128)) &&
+             (!('vleName' in data) || data.vleName == null || (data.vleName is string && data.vleName.size() <= 128)) &&
+             (!('cscId' in data) || data.cscId == null || (data.cscId is string && data.cscId.size() <= 64)) &&
+             (!('phone' in data) || data.phone == null || (data.phone is string && data.phone.size() <= 32)) &&
+             (!('openingCash' in data) || data.openingCash is number) &&
+             (!('openingBank' in data) || data.openingBank is number) &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             (!('updatedAt' in data) || (data.updatedAt is timestamp && data.updatedAt <= request.time));
+    }
+
+    // Validation helper for Transaction
+    function isValidTransaction(data) {
+      return data.userId is string && data.userId.size() <= 128 &&
+             data.type is string && (data.type == 'INCOME' || data.type == 'EXPENSE') &&
+             data.category is string && data.category.size() > 0 && data.category.size() <= 64 &&
+             data.amount is number && data.amount > 0 &&
+             data.paymentMode is string && (data.paymentMode == 'CASH' || data.paymentMode == 'ONLINE_UPI' || data.paymentMode == 'BANK_TRANSFER') &&
+             (!('customerName' in data) || data.customerName == null || (data.customerName is string && data.customerName.size() <= 128)) &&
+             (!('customerPhone' in data) || data.customerPhone == null || (data.customerPhone is string && data.customerPhone.size() <= 32)) &&
+             (!('referenceNo' in data) || data.referenceNo == null || (data.referenceNo is string && data.referenceNo.size() <= 64)) &&
+             (!('notes' in data) || data.notes == null || (data.notes is string && data.notes.size() <= 500)) &&
+             (!('aepsCashGiven' in data) || data.aepsCashGiven is number) &&
+             data.dateString is string && data.dateString.size() <= 32 &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             (!('updatedAt' in data) || (data.updatedAt is timestamp && data.updatedAt <= request.time));
+    }
+
+    // User Profile collection
+    match /users/{userId} {
+      allow get, list: if isOwner(userId);
+
+      allow create: if isOwner(userId) &&
+                       incoming().userId == request.auth.uid &&
+                       isValidUserProfile(incoming()) &&
+                       incoming().keys().hasAll(['userId', 'createdAt']);
+
+      allow update: if isOwner(userId) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       isValidUserProfile(incoming()) &&
+                       incoming().diff(existing()).affectedKeys().hasOnly([
+                         'email', 'displayName', 'centerName', 'vleName', 'cscId',
+                         'phone', 'openingCash', 'openingBank', 'updatedAt'
+                       ]);
+
+      allow delete: if isOwner(userId);
+
+      // User's private transactions subcollection
+      match /transactions/{transactionId} {
+        allow get, list: if isOwner(userId);
+
+        allow create: if isOwner(userId) &&
+                         isValidId(transactionId) &&
+                         incoming().userId == request.auth.uid &&
+                         incoming().keys().hasAll(['userId', 'type', 'category', 'amount', 'paymentMode', 'dateString', 'createdAt']) &&
+                         isValidTransaction(incoming());
+
+        allow update: if isOwner(userId) &&
+                         isValidId(transactionId) &&
+                         incoming().userId == existing().userId &&
+                         incoming().createdAt == existing().createdAt &&
+                         isValidTransaction(incoming()) &&
+                         incoming().diff(existing()).affectedKeys().hasOnly([
+                           'type', 'category', 'amount', 'paymentMode', 'customerName',
+                           'customerPhone', 'referenceNo', 'notes', 'aepsCashGiven',
+                           'dateString', 'updatedAt'
+                         ]);
+
+        allow delete: if isOwner(userId) && isValidId(transactionId);
+      }
+    }
+  }
+}

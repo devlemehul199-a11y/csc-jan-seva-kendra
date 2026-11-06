@@ -1,0 +1,2415 @@
+<!DOCTYPE html>
+<html lang="gu" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>જન સેવા કેન્દ્ર - CSC Digital Khata & Billing System</title>
+  
+  <!-- Google Fonts: Plus Jakarta Sans & Noto Sans Gujarati -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Gujarati:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            csc: {
+              dark: '#070c18',
+              card: '#0e172a',
+              card2: '#101b2f',
+              border: 'rgba(255, 255, 255, 0.08)',
+              emerald: '#10b981',
+              sky: '#38bdf8',
+              gold: '#fbbf24',
+              rose: '#f43f5e',
+              indigo: '#6366f1'
+            }
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', '"Noto Sans Gujarati"', 'sans-serif'],
+            gujarati: ['"Noto Sans Gujarati"', '"Plus Jakarta Sans"', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <!-- QRCode.js CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <style>
+    body {
+      background-color: #070c18;
+      color: #f1f5f9;
+      font-family: 'Plus Jakarta Sans', 'Noto Sans Gujarati', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #070c18;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1e293b;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #334155;
+    }
+
+    /* Subtle Glassmorphism Card Style */
+    .csc-card {
+      background-color: #0e172a;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 1rem;
+    }
+    .csc-card-interactive {
+      background-color: #0e172a;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 1rem;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .csc-card-interactive:hover {
+      border-color: rgba(56, 189, 248, 0.3);
+      transform: translateY(-1px);
+    }
+
+    /* Print Styles for A4 Official Invoice */
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      #print-invoice-section, #print-invoice-section * {
+        visibility: visible;
+      }
+      #print-invoice-section {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        margin: 0;
+        padding: 20px;
+        background: #ffffff !important;
+        color: #000000 !important;
+        box-shadow: none !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+    }
+
+    /* Voice Wave Animation */
+    @keyframes pulse-wave {
+      0%, 100% { transform: scale(1); opacity: 0.8; }
+      50% { transform: scale(1.15); opacity: 1; }
+    }
+    .voice-pulse {
+      animation: pulse-wave 1.5s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-csc-sky selection:text-slate-900 pb-20 md:pb-6">
+
+  <!-- ==================== 1. TOP HEADER & NAVIGATION ==================== -->
+  <header class="sticky top-0 z-40 bg-[#070c18]/90 backdrop-blur-md border-b border-white/10 px-4 py-3 md:px-8">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      
+      <!-- Brand & Center Name -->
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-sky-500 flex items-center justify-center text-slate-900 font-extrabold text-lg shadow-lg shadow-sky-500/20">
+          <i class="fa-solid fa-landmark text-white"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 id="header-center-name" class="font-bold text-base md:text-lg tracking-tight text-white leading-tight">શ્રી ગણેશ જન સેવા કેન્દ્ર</h1>
+            <span class="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse"></span>CSC VLE Digital Khata
+            </span>
+          </div>
+          <p id="header-vle-info" class="text-xs text-slate-400 flex items-center gap-2">
+            <span><i class="fa-solid fa-user-tie mr-1 text-csc-sky"></i><span id="header-vle-name">પટેલ રમેશભાઈ</span></span>
+            <span class="text-slate-600">|</span>
+            <span>CSC ID: <strong id="header-csc-id" class="text-slate-300">GJ12345678</strong></span>
+          </p>
+        </div>
+      </div>
+
+      <!-- Quick Action Buttons -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <!-- Dynamic UPI QR Code Button -->
+        <button onclick="openUpiQrModal()" class="relative group flex items-center gap-2 bg-gradient-to-r from-csc-sky/20 to-csc-emerald/20 hover:from-csc-sky/30 hover:to-csc-emerald/30 text-white border border-csc-sky/40 hover:border-csc-sky px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-md shadow-csc-sky/10">
+          <i class="fa-solid fa-qrcode text-csc-sky group-hover:scale-110 transition-transform"></i>
+          <span>QR પેમેન્ટ લો</span>
+          <span class="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+          </span>
+        </button>
+
+        <!-- Voice Fast Entry Button -->
+        <button onclick="openVoiceModal()" class="flex items-center gap-1.5 bg-white/5 hover:bg-white/10 text-csc-gold border border-white/10 hover:border-csc-gold/40 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl text-xs sm:text-sm font-medium transition-all" title="બોલીને એન્ટ્રી કરો (Voice Input)">
+          <i class="fa-solid fa-microphone text-sm"></i>
+          <span class="hidden md:inline">બોલીને એન્ટ્રી</span>
+        </button>
+
+        <!-- Desktop Navigation Tabs -->
+        <nav class="hidden md:flex items-center gap-1 bg-[#0e172a] border border-white/10 rounded-xl p-1 ml-2">
+          <button onclick="switchTab('dashboard')" id="desktop-tab-dashboard" class="tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 bg-csc-sky text-slate-900 shadow">
+            <i class="fa-solid fa-house"></i> જન સેવા કેન્દ્ર
+          </button>
+          <button onclick="switchTab('transactions')" id="desktop-tab-transactions" class="tab-btn px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white transition-colors flex items-center gap-1.5">
+            <i class="fa-solid fa-receipt"></i> બધા વ્યવહાર
+          </button>
+          <button onclick="switchTab('analytics')" id="desktop-tab-analytics" class="tab-btn px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white transition-colors flex items-center gap-1.5">
+            <i class="fa-solid fa-chart-pie"></i> Analytics
+          </button>
+          <button onclick="switchTab('settings')" id="desktop-tab-settings" class="tab-btn px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white transition-colors flex items-center gap-1.5">
+            <i class="fa-solid fa-gear"></i> Settings
+          </button>
+        </nav>
+
+        <!-- Logout Button -->
+        <button onclick="handleLogout()" class="p-2 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-xl transition-all" title="લોગ આઉટ">
+          <i class="fa-solid fa-right-from-bracket"></i>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ==================== MAIN CONTENT WRAPPER ==================== -->
+  <main class="max-w-7xl mx-auto w-full px-3 py-4 sm:px-6 sm:py-6 flex-1 space-y-6">
+
+    <!-- VIEW 1: DASHBOARD & QUICK LEDGER -->
+    <section id="view-dashboard" class="space-y-6">
+      
+      <!-- Top Row: Welcome & Date Filter Pills -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h2 class="text-xl sm:text-2xl font-bold text-white tracking-tight flex items-center gap-2">
+            <span>રોજમેળ & ડેશબોર્ડ (Day-Book)</span>
+          </h2>
+          <p class="text-xs sm:text-sm text-slate-400" id="current-datetime-display">આજનો હિસાબ અને સિલક વિગત</p>
+        </div>
+
+        <!-- Quick Filter Pills -->
+        <div class="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 text-xs no-scrollbar">
+          <button onclick="setDateFilter('today')" id="filter-today" class="date-filter-btn px-3 py-1.5 rounded-full font-semibold bg-csc-sky text-slate-900 shadow">આજે</button>
+          <button onclick="setDateFilter('yesterday')" id="filter-yesterday" class="date-filter-btn px-3 py-1.5 rounded-full font-medium text-slate-400 hover:text-white bg-slate-800/80 border border-white/5">ગઈકાલે</button>
+          <button onclick="setDateFilter('this_week')" id="filter-this_week" class="date-filter-btn px-3 py-1.5 rounded-full font-medium text-slate-400 hover:text-white bg-slate-800/80 border border-white/5">આ અઠવાડિયે</button>
+          <button onclick="setDateFilter('this_month')" id="filter-this_month" class="date-filter-btn px-3 py-1.5 rounded-full font-medium text-slate-400 hover:text-white bg-slate-800/80 border border-white/5">આ મહિને</button>
+          <button onclick="setDateFilter('this_year')" id="filter-this_year" class="date-filter-btn px-3 py-1.5 rounded-full font-medium text-slate-400 hover:text-white bg-slate-800/80 border border-white/5">Year 2026</button>
+          <button onclick="setDateFilter('all')" id="filter-all" class="date-filter-btn px-3 py-1.5 rounded-full font-medium text-slate-400 hover:text-white bg-slate-800/80 border border-white/5">બધા</button>
+        </div>
+      </div>
+
+      <!-- Financial Metric Cards (Key Balances) -->
+      <div class="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
+        
+        <!-- Net Profit Card (Full width on very small screens, or 2 cols) -->
+        <div class="col-span-2 lg:col-span-1 csc-card p-4 relative overflow-hidden bg-gradient-to-br from-emerald-950/40 via-[#0e172a] to-[#0e172a] border-emerald-500/20">
+          <div class="flex items-center justify-between text-xs text-emerald-400 font-semibold mb-1">
+            <span>ચોખ્ખો નફો (Net Profit)</span>
+            <div class="w-7 h-7 rounded-lg bg-emerald-500/20 flex items-center justify-center text-emerald-400">
+              <i class="fa-solid fa-chart-line"></i>
+            </div>
+          </div>
+          <div class="text-2xl sm:text-3xl font-extrabold text-emerald-400" id="card-net-profit">₹0</div>
+          <div class="text-[11px] text-slate-400 mt-1 flex items-center gap-1">
+            <span>કુલ આવક - ખર્ચ</span>
+          </div>
+        </div>
+
+        <!-- Cash in Hand -->
+        <div class="csc-card p-4 relative overflow-hidden border-amber-500/20">
+          <div class="flex items-center justify-between text-xs text-amber-400 font-semibold mb-1">
+            <span>રોકડ સિલક (Cash)</span>
+            <div class="w-7 h-7 rounded-lg bg-amber-500/20 flex items-center justify-center text-amber-400">
+              <i class="fa-solid fa-money-bill-wave"></i>
+            </div>
+          </div>
+          <div class="text-xl sm:text-2xl font-bold text-white" id="card-cash-in-hand">₹0</div>
+          <div class="text-[11px] text-slate-400 mt-1 truncate">તિજોરી / કાઉન્ટર કેશ</div>
+        </div>
+
+        <!-- Bank / UPI Balance -->
+        <div class="csc-card p-4 relative overflow-hidden border-sky-500/20">
+          <div class="flex items-center justify-between text-xs text-sky-400 font-semibold mb-1">
+            <span>બેંક / UPI સિલક</span>
+            <div class="w-7 h-7 rounded-lg bg-sky-500/20 flex items-center justify-center text-sky-400">
+              <i class="fa-solid fa-building-columns"></i>
+            </div>
+          </div>
+          <div class="text-xl sm:text-2xl font-bold text-white" id="card-bank-balance">₹0</div>
+          <div class="text-[11px] text-slate-400 mt-1 truncate">ઓનલાઇન એકાઉન્ટ</div>
+        </div>
+
+        <!-- Today's Income -->
+        <div class="csc-card p-4 relative overflow-hidden">
+          <div class="flex items-center justify-between text-xs text-emerald-400 font-semibold mb-1">
+            <span>આવક (Income)</span>
+            <div class="w-7 h-7 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">
+              <i class="fa-solid fa-arrow-down-left"></i>
+            </div>
+          </div>
+          <div class="text-xl sm:text-2xl font-bold text-emerald-400" id="card-total-income">₹0</div>
+          <div class="text-[11px] text-slate-400 mt-1 flex items-center gap-1">
+            <span id="card-income-count">0 વ્યવહાર</span>
+          </div>
+        </div>
+
+        <!-- Today's Expense -->
+        <div class="csc-card p-4 relative overflow-hidden">
+          <div class="flex items-center justify-between text-xs text-rose-400 font-semibold mb-1">
+            <span>ખર્ચ (Expense)</span>
+            <div class="w-7 h-7 rounded-lg bg-rose-500/10 flex items-center justify-center text-rose-400">
+              <i class="fa-solid fa-arrow-up-right"></i>
+            </div>
+          </div>
+          <div class="text-xl sm:text-2xl font-bold text-rose-400" id="card-total-expense">₹0</div>
+          <div class="text-[11px] text-slate-400 mt-1 flex items-center gap-1">
+            <span id="card-expense-count">0 વ્યવહાર</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Quick Action Buttons: Fast Entry Banner -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <button onclick="openAddTransactionModal('INCOME')" class="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold text-base shadow-lg shadow-emerald-700/20 hover:brightness-110 active:scale-[0.99] transition-all">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center text-xl">
+              <i class="fa-solid fa-plus"></i>
+            </div>
+            <div class="text-left">
+              <div>+ નવી આવક (Income)</div>
+              <div class="text-xs font-normal text-emerald-100">સેવા ફી, ફોર્મ, ઝેરોક્ષ, પાન કાર્ડ</div>
+            </div>
+          </div>
+          <i class="fa-solid fa-chevron-right text-emerald-200"></i>
+        </button>
+
+        <button onclick="openAddTransactionModal('EXPENSE')" class="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-rose-600 to-pink-600 text-white font-bold text-base shadow-lg shadow-rose-700/20 hover:brightness-110 active:scale-[0.99] transition-all">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center text-xl">
+              <i class="fa-solid fa-minus"></i>
+            </div>
+            <div class="text-left">
+              <div>- નવો ખર્ચ (Expense)</div>
+              <div class="text-xs font-normal text-rose-100">કાગળ રિમ, શાહી, લાઈટબિલ, ચા-નાસ્તો</div>
+            </div>
+          </div>
+          <i class="fa-solid fa-chevron-right text-rose-200"></i>
+        </button>
+
+        <button onclick="openUpiQrModal()" class="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-sky-600 to-indigo-600 text-white font-bold text-base shadow-lg shadow-sky-700/20 hover:brightness-110 active:scale-[0.99] transition-all">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center text-xl">
+              <i class="fa-solid fa-qrcode"></i>
+            </div>
+            <div class="text-left">
+              <div>QR પેમેન્ટ મેળવો</div>
+              <div class="text-xs font-normal text-sky-100">ગ્રાહક પાસેથી તાત્કાલિક UPI ચુકવણી</div>
+            </div>
+          </div>
+          <i class="fa-solid fa-arrow-right-arrow-left text-sky-200"></i>
+        </button>
+      </div>
+
+      <!-- Quick Ledger Table (Recent Transactions) -->
+      <div class="csc-card overflow-hidden">
+        <div class="p-4 border-b border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-book-open text-csc-sky"></i>
+            <h3 class="font-bold text-white text-base">આજનો રોજમેળ ખાતાવહી (Live Ledger)</h3>
+            <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-slate-800 text-slate-300" id="ledger-item-count">0 નોંધ</span>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button onclick="printDayBook()" class="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 text-xs font-medium flex items-center gap-1.5 transition-colors">
+              <i class="fa-solid fa-print text-csc-gold"></i> રોજમેળ પ્રિન્ટ
+            </button>
+            <button onclick="exportToCsv()" class="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 text-xs font-medium flex items-center gap-1.5 transition-colors">
+              <i class="fa-solid fa-file-excel text-emerald-400"></i> Excel ડાઉનલોડ
+            </button>
+            <button onclick="switchTab('transactions')" class="text-xs text-csc-sky hover:underline font-medium">
+              બધા જુઓ <i class="fa-solid fa-arrow-right ml-1"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Transaction List Table (Desktop & Tablet) -->
+        <div class="hidden sm:block overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-slate-900/60 text-xs uppercase text-slate-400 border-b border-white/5">
+              <tr>
+                <th class="px-4 py-3">સમય & તારીખ</th>
+                <th class="px-4 py-3">સેવા / કેટેગરી</th>
+                <th class="px-4 py-3">ગ્રાહક & વિગત</th>
+                <th class="px-4 py-3">પેમેન્ટ મોડ</th>
+                <th class="px-4 py-3 text-right">રકમ (₹)</th>
+                <th class="px-4 py-3 text-center">બિલ & એક્શન</th>
+              </tr>
+            </thead>
+            <tbody id="dashboard-ledger-tbody" class="divide-y divide-white/5 font-medium">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Mobile Card List for Smartphones -->
+        <div id="dashboard-ledger-mobile" class="sm:hidden divide-y divide-white/5">
+          <!-- Dynamically populated mobile items -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="dashboard-empty-state" class="hidden p-8 text-center text-slate-500">
+          <i class="fa-regular fa-folder-open text-4xl mb-3 text-slate-600"></i>
+          <p class="text-sm font-medium">આ સમયગાળામાં કોઈ વ્યવહાર નોંધાયેલ નથી.</p>
+          <p class="text-xs text-slate-600 mt-1">+ નવી આવક અથવા - ખર્ચ ઉમેરો.</p>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- VIEW 2: SEARCHABLE ALL TRANSACTIONS REGISTER -->
+    <section id="view-transactions" class="space-y-6 hidden">
+      
+      <!-- Filter & Search Controls Header -->
+      <div class="csc-card p-4 space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 class="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+              <i class="fa-solid fa-table-list text-csc-sky"></i>
+              <span>બધા વ્યવહાર રજિસ્ટર (Transaction Register)</span>
+            </h2>
+            <p class="text-xs text-slate-400">શોધો, ફિલ્ટર કરો અને ગ્રાહકને બિલ / WhatsApp પાવતી મોકલો</p>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button onclick="exportToCsv()" class="px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-semibold flex items-center gap-1.5 transition-all">
+              <i class="fa-solid fa-file-csv"></i> CSV એક્સપોર્ટ
+            </button>
+            <button onclick="printDayBook()" class="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-200 border border-white/10 text-xs font-medium flex items-center gap-1.5 transition-all">
+              <i class="fa-solid fa-print"></i> પ્રિન્ટ
+            </button>
+          </div>
+        </div>
+
+        <!-- Search Bar and Dropdowns -->
+        <div class="grid grid-cols-1 sm:grid-cols-12 gap-3">
+          <!-- Text Search -->
+          <div class="sm:col-span-6 relative">
+            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-400 text-sm"></i>
+            <input type="text" id="transactions-search-input" oninput="applyAllFilters()" placeholder="ગ્રાહકનું નામ, મોબાઈલ, અરજી નં અથવા સેવા શોધો..." class="w-full pl-10 pr-4 py-2 bg-slate-900 border border-white/10 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-csc-sky focus:ring-1 focus:ring-csc-sky">
+          </div>
+
+          <!-- Type Filter -->
+          <div class="sm:col-span-3">
+            <select id="transactions-type-select" onchange="applyAllFilters()" class="w-full px-3 py-2 bg-slate-900 border border-white/10 rounded-xl text-sm text-white focus:outline-none focus:border-csc-sky">
+              <option value="ALL">બધા વ્યવહાર (All Types)</option>
+              <option value="INCOME">માત્ર આવક (Income Only)</option>
+              <option value="EXPENSE">માત્ર ખર્ચ (Expense Only)</option>
+            </select>
+          </div>
+
+          <!-- Category Filter -->
+          <div class="sm:col-span-3">
+            <select id="transactions-category-select" onchange="applyAllFilters()" class="w-full px-3 py-2 bg-slate-900 border border-white/10 rounded-xl text-sm text-white focus:outline-none focus:border-csc-sky">
+              <option value="ALL">બધી કેટેગરી (All Categories)</option>
+              <!-- Populated by JS -->
+            </select>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Transactions Full Register -->
+      <div class="csc-card overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-slate-900/70 text-xs uppercase text-slate-400 border-b border-white/5">
+              <tr>
+                <th class="px-4 py-3">તારીખ & સમય</th>
+                <th class="px-4 py-3">પ્રકાર</th>
+                <th class="px-4 py-3">સેવા / ખર્ચ વિગત</th>
+                <th class="px-4 py-3">ગ્રાહક વિગત</th>
+                <th class="px-4 py-3">પેમેન્ટ મોડ</th>
+                <th class="px-4 py-3 text-right">રકમ (₹)</th>
+                <th class="px-4 py-3 text-center">બિલ (Invoice)</th>
+                <th class="px-4 py-3 text-center">ક્રિયા</th>
+              </tr>
+            </thead>
+            <tbody id="all-transactions-tbody" class="divide-y divide-white/5 font-medium">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+
+        <div id="all-transactions-empty" class="hidden p-10 text-center text-slate-500">
+          <i class="fa-solid fa-filter-circle-xmark text-4xl mb-3 text-slate-600"></i>
+          <p class="text-sm font-medium">તમારા ફિલ્ટર મુજબ કોઈ પરિણામ મળ્યું નથી.</p>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- VIEW 3: ANALYTICS & REVENUE CHARTS -->
+    <section id="view-analytics" class="space-y-6 hidden">
+      
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-xl sm:text-2xl font-bold text-white tracking-tight flex items-center gap-2">
+            <i class="fa-solid fa-chart-simple text-csc-sky"></i>
+            <span>આવક & ખર્ચ એનાલિટિક્સ (Analytics)</span>
+          </h2>
+          <p class="text-xs sm:text-sm text-slate-400">માસિક ટ્રેન્ડ અને સૌથી વધુ કમાણી કરાવતી સેવાઓનું પૃથ્થકરણ</p>
+        </div>
+      </div>
+
+      <!-- Charts Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Monthly Revenue Trends Bar Chart -->
+        <div class="lg:col-span-7 csc-card p-5 space-y-4">
+          <div class="flex items-center justify-between border-b border-white/5 pb-3">
+            <div>
+              <h3 class="font-bold text-white text-base">માસિક આવક વિરુદ્ધ ખર્ચ (Year 2026)</h3>
+              <p class="text-xs text-slate-400">મહિનાવાર કુલ આવક અને ખર્ચનો આલેખ</p>
+            </div>
+            <span class="text-xs px-2.5 py-1 rounded-lg bg-csc-sky/10 text-csc-sky border border-csc-sky/20 font-semibold">2026 Trends</span>
+          </div>
+          <div class="h-64 relative">
+            <canvas id="monthlyTrendChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Category Doughnut Breakdown -->
+        <div class="lg:col-span-5 csc-card p-5 space-y-4">
+          <div class="flex items-center justify-between border-b border-white/5 pb-3">
+            <div>
+              <h3 class="font-bold text-white text-base">ટોપ સેવાઓ (Service Share)</h3>
+              <p class="text-xs text-slate-400">કઈ સેવામાંથી કેટલી આવક થઈ</p>
+            </div>
+            <span class="text-xs px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-semibold">Category Share</span>
+          </div>
+          <div class="h-64 relative flex items-center justify-center">
+            <canvas id="categoryDoughnutChart"></canvas>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Top Services Performance List -->
+      <div class="csc-card p-5 space-y-4">
+        <h3 class="font-bold text-white text-base">સૌથી વધુ આવક આપતી મુખ્ય CSC સેવાઓ</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3" id="top-services-grid">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+    </section>
+
+    <!-- VIEW 4: SETTINGS & CENTER PROFILE -->
+    <section id="view-settings" class="space-y-6 hidden">
+      
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-xl sm:text-2xl font-bold text-white tracking-tight flex items-center gap-2">
+            <i class="fa-solid fa-sliders text-csc-sky"></i>
+            <span>કેન્દ્ર સેટિંગ્સ & પ્રોફાઈલ (Center Settings)</span>
+          </h2>
+          <p class="text-xs sm:text-sm text-slate-400">કેન્દ્રનું નામ, UPI ID, શરૂઆતની સિલક અને પાસવર્ડ બદલો</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Left: Center Profile Form -->
+        <div class="lg:col-span-7 csc-card p-5 space-y-4">
+          <h3 class="font-bold text-white text-base border-b border-white/5 pb-3 flex items-center gap-2">
+            <i class="fa-solid fa-store text-csc-gold"></i> જન સેવા કેન્દ્ર પ્રોફાઈલ વિગત
+          </h3>
+
+          <form id="settings-profile-form" onsubmit="saveProfileSettings(event)" class="space-y-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">કેન્દ્રનું નામ (Center Name)</label>
+                <input type="text" id="set-center-name" required class="w-full px-3 py-2 bg-slate-900 border border-white/10 rounded-xl text-sm text-white focus:outline-none focus:border-csc-sky">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">VLE ઓપરેટરનું નામ</label>
+                <input type="text" id="set-vle-name" required class="w-full px-3 py-2 bg-slate-900 border border-white/10 rounded-xl text-sm text-white focus:outline-none focus:border-csc-sky">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">CSC ID / Kiosk Code</label>
+                <input type="text" id="set-csc-id" required class="w-full px-3 py-2 bg-slate-900 border border-white/10 rounded-xl text-sm text-white focus:outline-none focus:border-csc-sky">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">મોબાઈલ નંબર (Mobile)</label>
+                <input type="text" id="set-mobile" required class="w-full px-3 py-2 bg-slate-900 border border-white/10 rounded-xl text-sm text-white focus:outline-none focus:border-csc-sky">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">
+                UPI ID (ગ્રાહક પાસેથી QR પેમેન્ટ લેવા માટે)
+                <span class="text-csc-sky text-[10px] ml-1">(e.g. 9876543210@paytm / name@okaxis)</span>
+              </label>
+              <input type="text" id="set-upi-id" required class="w-full px-3 py-2 bg-slate-900 border border-white/10 rounded-xl text-sm text-white focus:outline-none focus:border-csc-sky font-mono">
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">શરૂઆતની રોકડ સિલક (Opening Cash ₹)</label>
+                <input type="number" id="set-opening-cash" min="0" required class="w-full px-3 py-2 bg-slate-900 border border-white/10 rounded-xl text-sm text-white focus:outline-none focus:border-csc-sky font-bold">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">શરૂઆતની બેંક સિલક (Opening Bank ₹)</label>
+                <input type="number" id="set-opening-bank" min="0" required class="w-full px-3 py-2 bg-slate-900 border border-white/10 rounded-xl text-sm text-white focus:outline-none focus:border-csc-sky font-bold">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">કેન્દ્રનું સરનામું (Address for Invoice)</label>
+              <textarea id="set-address" rows="2" class="w-full px-3 py-2 bg-slate-900 border border-white/10 rounded-xl text-sm text-white focus:outline-none focus:border-csc-sky"></textarea>
+            </div>
+
+            <button type="submit" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-csc-sky to-blue-600 text-slate-900 font-bold text-sm shadow hover:brightness-110 transition-all">
+              <i class="fa-solid fa-floppy-disk mr-1.5"></i> સેટિંગ્સ સેવ કરો (Save Settings)
+            </button>
+          </form>
+        </div>
+
+        <!-- Right: Security & Data Backup -->
+        <div class="lg:col-span-5 space-y-6">
+          
+          <!-- Password Change Card -->
+          <div class="csc-card p-5 space-y-4">
+            <h3 class="font-bold text-white text-base border-b border-white/5 pb-3 flex items-center gap-2">
+              <i class="fa-solid fa-shield-halved text-emerald-400"></i> સુરક્ષા & પાસવર્ડ બદલો
+            </h3>
+
+            <form id="change-password-form" onsubmit="handleChangePassword(event)" class="space-y-3">
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">હાલનો પાસવર્ડ (Current Password)</label>
+                <input type="password" id="curr-password" required class="w-full px-3 py-2 bg-slate-900 border border-white/10 rounded-xl text-sm text-white focus:outline-none focus:border-csc-sky">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">નવો પાસવર્ડ (New Password)</label>
+                <input type="password" id="new-password" required minlength="4" class="w-full px-3 py-2 bg-slate-900 border border-white/10 rounded-xl text-sm text-white focus:outline-none focus:border-csc-sky">
+              </div>
+              <button type="submit" class="w-full py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs border border-white/10 transition-all">
+                પાસવર્ડ અપડેટ કરો
+              </button>
+            </form>
+          </div>
+
+          <!-- Data Management & Backup -->
+          <div class="csc-card p-5 space-y-3">
+            <h3 class="font-bold text-white text-base border-b border-white/5 pb-2 flex items-center gap-2">
+              <i class="fa-solid fa-database text-purple-400"></i> બેકઅપ & ડેટા રિસેટ
+            </h3>
+            
+            <p class="text-xs text-slate-400">તમારો ડેટા તમારા બ્રાઉઝરમાં સંપૂર્ણ સુરક્ષિત અને ઓફલાઇન સંગ્રહાયેલ છે.</p>
+
+            <div class="flex flex-col gap-2 pt-2">
+              <button onclick="exportFullJsonBackup()" class="w-full py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-slate-200 border border-white/10 text-xs font-medium flex items-center justify-center gap-2 transition-colors">
+                <i class="fa-solid fa-download text-csc-sky"></i> સંપૂર્ણ ડેટા બેકઅપ (JSON Export)
+              </button>
+
+              <label class="w-full py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-slate-200 border border-white/10 text-xs font-medium flex items-center justify-center gap-2 cursor-pointer transition-colors">
+                <i class="fa-solid fa-upload text-emerald-400"></i> ડેટા રીસ્ટોર કરો (JSON Import)
+                <input type="file" id="json-import-file" accept=".json" onchange="importFullJsonBackup(event)" class="hidden">
+              </label>
+
+              <button onclick="resetToSampleData()" class="w-full py-2 px-3 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/20 text-xs font-medium flex items-center justify-center gap-2 transition-colors mt-2">
+                <i class="fa-solid fa-rotate-left"></i> નમૂના ડેટા રિસેટ કરો (Reset Demo Data)
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ==================== 2. MOBILE BOTTOM NAVIGATION BAR ==================== -->
+  <nav class="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-[#070c18]/95 backdrop-blur-lg border-t border-white/10 px-2 py-1.5 flex items-center justify-around shadow-2xl">
+    <button onclick="switchTab('dashboard')" id="mobile-tab-dashboard" class="mobile-tab-btn flex flex-col items-center py-1 px-2 text-csc-sky">
+      <i class="fa-solid fa-house text-base"></i>
+      <span class="text-[10px] font-bold mt-0.5">જન સેવા કેન્દ્ર</span>
+    </button>
+    <button onclick="switchTab('transactions')" id="mobile-tab-transactions" class="mobile-tab-btn flex flex-col items-center py-1 px-2 text-slate-400">
+      <i class="fa-solid fa-receipt text-base"></i>
+      <span class="text-[10px] font-medium mt-0.5">બધા વ્યવહાર</span>
+    </button>
+
+    <!-- Center Floating Action Button (+) -->
+    <div class="relative -top-5">
+      <button onclick="openAddTransactionModal('INCOME')" class="w-12 h-12 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-400 text-slate-900 font-extrabold flex items-center justify-center text-xl shadow-lg shadow-emerald-500/40 border-4 border-[#070c18] active:scale-95 transition-transform" title="નવી એન્ટ્રી">
+        <i class="fa-solid fa-plus text-slate-900"></i>
+      </button>
+    </div>
+
+    <button onclick="switchTab('analytics')" id="mobile-tab-analytics" class="mobile-tab-btn flex flex-col items-center py-1 px-2 text-slate-400">
+      <i class="fa-solid fa-chart-pie text-base"></i>
+      <span class="text-[10px] font-medium mt-0.5">Analytics</span>
+    </button>
+    <button onclick="switchTab('settings')" id="mobile-tab-settings" class="mobile-tab-btn flex flex-col items-center py-1 px-2 text-slate-400">
+      <i class="fa-solid fa-gear text-base"></i>
+      <span class="text-[10px] font-medium mt-0.5">Settings</span>
+    </button>
+  </nav>
+
+  <!-- ==================== 3. MODALS ==================== -->
+
+  <!-- (A) AUTHENTICATION / LOGIN MODAL -->
+  <div id="modal-login" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 hidden">
+    <div class="csc-card max-w-sm w-full p-6 space-y-5 border border-white/10 shadow-2xl relative overflow-hidden">
+      <!-- Decorative top tricolor bar -->
+      <div class="absolute top-0 left-0 right-0 h-1.5 flex">
+        <div class="h-full w-1/3 bg-[#FF9933]"></div>
+        <div class="h-full w-1/3 bg-white"></div>
+        <div class="h-full w-1/3 bg-[#138808]"></div>
+      </div>
+
+      <div class="text-center pt-2">
+        <div class="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-tr from-amber-500 to-sky-500 flex items-center justify-center text-slate-900 text-2xl font-bold mb-3 shadow-lg shadow-sky-500/20">
+          <i class="fa-solid fa-fingerprint text-white"></i>
+        </div>
+        <h2 class="text-xl font-bold text-white">જન સેવા કેન્દ્ર લૉગિન</h2>
+        <p class="text-xs text-slate-400 mt-1">CSC Digital Khata સુરક્ષિત એકાઉન્ટ એક્સેસ</p>
+      </div>
+
+      <form onsubmit="handleLoginSubmit(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">યુઝરનેમ (Username)</label>
+          <div class="relative">
+            <i class="fa-solid fa-user absolute left-3 top-3 text-slate-400 text-xs"></i>
+            <input type="text" id="login-username" value="admin" required class="w-full pl-9 pr-3 py-2 bg-slate-900 border border-white/10 rounded-xl text-sm text-white focus:outline-none focus:border-csc-sky">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">પાસવર્ડ (Password)</label>
+          <div class="relative">
+            <i class="fa-solid fa-lock absolute left-3 top-3 text-slate-400 text-xs"></i>
+            <input type="password" id="login-password" value="1234" required class="w-full pl-9 pr-3 py-2 bg-slate-900 border border-white/10 rounded-xl text-sm text-white focus:outline-none focus:border-csc-sky">
+          </div>
+          <p class="text-[11px] text-slate-500 mt-1">ડિફોલ્ટ પાસવર્ડ: <span class="text-csc-gold font-mono">1234</span></p>
+        </div>
+
+        <div id="login-error-msg" class="hidden text-xs text-rose-400 text-center font-medium bg-rose-500/10 py-1.5 rounded-lg border border-rose-500/20">
+          ખોટો યુઝરનેમ કે પાસવર્ડ!
+        </div>
+
+        <button type="submit" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-slate-950 font-bold text-sm shadow-lg shadow-emerald-500/20 transition-all">
+          લૉગિન કરો (Login to Khata)
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- (B) DYNAMIC UPI QR CODE PAYMENT MODAL -->
+  <div id="modal-upi-qr" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="csc-card max-w-md w-full p-5 space-y-4 border border-csc-sky/30 shadow-2xl relative">
+      <button onclick="closeUpiQrModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div class="flex items-center gap-2.5 border-b border-white/10 pb-3">
+        <div class="w-9 h-9 rounded-xl bg-csc-sky/20 flex items-center justify-center text-csc-sky">
+          <i class="fa-solid fa-qrcode text-lg"></i>
+        </div>
+        <div>
+          <h3 class="font-bold text-white text-base">QR પેમેન્ટ સ્કેનર (Instant UPI)</h3>
+          <p class="text-xs text-slate-400">ગ્રાહકને PhonePe, GPay, Paytm સ્કેન કરાવો</p>
+        </div>
+      </div>
+
+      <!-- Quick Amount Input & Preset Chips -->
+      <div class="space-y-2">
+        <label class="block text-xs font-semibold text-slate-300">સેવા ચુકવણી રકમ (₹ Amount)</label>
+        <div class="relative">
+          <span class="absolute left-3.5 top-2.5 text-lg font-bold text-csc-sky">₹</span>
+          <input type="number" id="qr-input-amount" value="50" min="1" oninput="generateDynamicQrCode()" class="w-full pl-9 pr-4 py-2 bg-slate-900 border border-white/10 rounded-xl text-lg font-extrabold text-white focus:outline-none focus:border-csc-sky">
+        </div>
+
+        <!-- Quick Chips -->
+        <div class="flex items-center gap-1.5 flex-wrap pt-1">
+          <button type="button" onclick="setQrAmount(30)" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 font-semibold border border-white/5">₹30</button>
+          <button type="button" onclick="setQrAmount(50)" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 font-semibold border border-white/5">₹50</button>
+          <button type="button" onclick="setQrAmount(100)" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 font-semibold border border-white/5">₹100</button>
+          <button type="button" onclick="setQrAmount(150)" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 font-semibold border border-white/5">₹150</button>
+          <button type="button" onclick="setQrAmount(200)" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 font-semibold border border-white/5">₹200</button>
+          <button type="button" onclick="setQrAmount(500)" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 font-semibold border border-white/5">₹500</button>
+        </div>
+      </div>
+
+      <!-- Service / Customer Optional Note -->
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <label class="block text-[11px] text-slate-400 mb-1">સેવા / કેટેગરી</label>
+          <select id="qr-input-category" class="w-full px-2.5 py-1.5 bg-slate-900 border border-white/10 rounded-lg text-xs text-white">
+            <option value="Aadhaar Update">આધાર કાર્ડ અપડેટ</option>
+            <option value="PAN Card">પાન કાર્ડ</option>
+            <option value="Ayushman Card">આયુષ્માન કાર્ડ</option>
+            <option value="PM Kisan">પીએમ કિસાન</option>
+            <option value="Online Application">ઓનલાઇન અરજી ફોર્મ</option>
+            <option value="Bill Payment">લાઈટબિલ / રિચાર્જ</option>
+            <option value="Xerox & Print">ઝેરોક્ષ & લેમિનેશન</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] text-slate-400 mb-1">ગ્રાહકનું નામ (ઓપ્શનલ)</label>
+          <input type="text" id="qr-input-customer" placeholder="ગ્રાહકનું નામ" class="w-full px-2.5 py-1.5 bg-slate-900 border border-white/10 rounded-lg text-xs text-white">
+        </div>
+      </div>
+
+      <!-- Dynamic QR Code Container Box -->
+      <div class="bg-white p-4 rounded-2xl flex flex-col items-center justify-center shadow-inner">
+        <div id="qrcode-canvas" class="flex items-center justify-center"></div>
+        <div class="mt-3 text-center">
+          <p class="text-xs font-bold text-slate-900" id="qr-display-amount">ચૂકવવાપાત્ર રકમ: ₹50.00</p>
+          <p class="text-[10px] text-slate-500 font-mono" id="qr-display-upi">UPI ID: csc.center@upi</p>
+        </div>
+      </div>
+
+      <!-- Action Button: Mark Paid & Auto Log to Ledger -->
+      <button onclick="confirmUpiPaymentReceived()" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:brightness-110 text-slate-950 font-extrabold text-sm shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 transition-all">
+        <i class="fa-solid fa-circle-check text-base"></i>
+        <span>પેમેન્ટ મળી ગયું (ખાતાવહીમાં નોંધો)</span>
+      </button>
+
+    </div>
+  </div>
+
+  <!-- (C) ADD / EDIT TRANSACTION MODAL -->
+  <div id="modal-transaction" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 hidden">
+    <div class="csc-card max-w-lg w-full max-h-[90vh] overflow-y-auto p-5 space-y-4 border border-white/10 shadow-2xl relative">
+      <button onclick="closeTransactionModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div class="flex items-center gap-3 border-b border-white/10 pb-3">
+        <div id="modal-type-icon" class="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-lg">
+          <i class="fa-solid fa-plus"></i>
+        </div>
+        <div>
+          <h3 id="modal-transaction-title" class="font-bold text-white text-base">નવી આવક નોંધો (Add Income)</h3>
+          <p class="text-xs text-slate-400">સેવા ફી અથવા ખર્ચની વિગત દાખલ કરો</p>
+        </div>
+      </div>
+
+      <!-- Type Toggle: Income vs Expense -->
+      <div class="grid grid-cols-2 gap-2 p-1 bg-slate-900 rounded-xl border border-white/5">
+        <button type="button" onclick="setModalTransactionType('INCOME')" id="type-toggle-income" class="py-1.5 rounded-lg text-xs font-bold transition-all bg-emerald-500 text-slate-950 shadow">
+          <i class="fa-solid fa-plus mr-1"></i> આવક (Income)
+        </button>
+        <button type="button" onclick="setModalTransactionType('EXPENSE')" id="type-toggle-expense" class="py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition-all">
+          <i class="fa-solid fa-minus mr-1"></i> ખર્ચ (Expense)
+        </button>
+      </div>
+
+      <form id="form-transaction" onsubmit="handleTransactionSubmit(event)" class="space-y-3">
+        <input type="hidden" id="edit-transaction-id" value="">
+
+        <!-- Category Selection with Quick Chips -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">સેવા / કેટેગરી (Category)</label>
+          <select id="modal-field-category" required class="w-full px-3 py-2 bg-slate-900 border border-white/10 rounded-xl text-sm text-white focus:outline-none focus:border-csc-sky">
+            <!-- Dynamically populated depending on Income/Expense -->
+          </select>
+        </div>
+
+        <!-- Amount and Payment Mode -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">રકમ (Amount ₹)</label>
+            <div class="relative">
+              <span class="absolute left-3.5 top-2 font-bold text-csc-sky">₹</span>
+              <input type="number" id="modal-field-amount" min="1" step="any" required placeholder="0.00" class="w-full pl-8 pr-3 py-2 bg-slate-900 border border-white/10 rounded-xl text-base font-bold text-white focus:outline-none focus:border-csc-sky">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">પેમેન્ટ મોડ (Payment Mode)</label>
+            <select id="modal-field-mode" required class="w-full px-3 py-2 bg-slate-900 border border-white/10 rounded-xl text-sm text-white focus:outline-none focus:border-csc-sky">
+              <option value="Cash">રોકડ (Cash)</option>
+              <option value="UPI / QR">UPI / QR (Online)</option>
+              <option value="Bank Transfer">બેંક ટ્રાન્સફર (Bank)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- AEPS Cash Withdrawal Special Handling (Visible for AEPS category) -->
+        <div id="aeps-special-box" class="hidden p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 space-y-2">
+          <div class="flex items-center justify-between text-xs text-amber-300 font-semibold">
+            <span><i class="fa-solid fa-money-bill-transfer mr-1"></i> AEPS રોકડ ઉપાડ (Cash Given to Customer)</span>
+          </div>
+          <div class="text-[11px] text-slate-300">
+            તમે ગ્રાહકને આપેલી રોકડ રકમ (Cash Out) દાખલ કરો. (ઉપરની રકમ તમારું કમિશન/ફી છે).
+          </div>
+          <input type="number" id="modal-field-aeps" min="0" placeholder="ગ્રાહકને આપેલ રોકડ (e.g. 2000)" class="w-full px-3 py-1.5 bg-slate-900 border border-amber-500/30 rounded-lg text-sm text-amber-300 font-bold">
+        </div>
+
+        <!-- Customer Details (For Receipts & WhatsApp) -->
+        <div class="pt-1 border-t border-white/5 space-y-3" id="customer-details-section">
+          <p class="text-xs font-bold text-slate-300 flex items-center gap-1.5">
+            <i class="fa-solid fa-address-card text-csc-sky"></i>
+            <span>ગ્રાહક વિગત (બિલ અને WhatsApp પાવતી માટે)</span>
+          </p>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[11px] text-slate-400 mb-1">ગ્રાહકનું નામ</label>
+              <input type="text" id="modal-field-customer" placeholder="e.g. રમેશભાઈ પટેલ" class="w-full px-3 py-1.5 bg-slate-900 border border-white/10 rounded-xl text-sm text-white focus:outline-none focus:border-csc-sky">
+            </div>
+
+            <div>
+              <label class="block text-[11px] text-slate-400 mb-1">મોબાઈલ નંબર (10 અંક)</label>
+              <input type="tel" id="modal-field-phone" placeholder="e.g. 9876543210" pattern="[0-9]{10}" class="w-full px-3 py-1.5 bg-slate-900 border border-white/10 rounded-xl text-sm text-white focus:outline-none focus:border-csc-sky">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[11px] text-slate-400 mb-1">અરજી / એકનોલેજમેન્ટ નં</label>
+              <input type="text" id="modal-field-ref" placeholder="e.g. ACK-2026-904" class="w-full px-3 py-1.5 bg-slate-900 border border-white/10 rounded-xl text-sm text-white focus:outline-none focus:border-csc-sky font-mono">
+            </div>
+
+            <div>
+              <label class="block text-[11px] text-slate-400 mb-1">ખાસ નોંધ (Notes)</label>
+              <input type="text" id="modal-field-notes" placeholder="e.g. ડોક્યુમેન્ટ અપલોડ બાકી" class="w-full px-3 py-1.5 bg-slate-900 border border-white/10 rounded-xl text-sm text-white focus:outline-none focus:border-csc-sky">
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 pt-3">
+          <button type="button" onclick="closeTransactionModal()" class="w-1/3 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs transition-all">
+            રદ કરો
+          </button>
+          <button type="submit" class="w-2/3 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-bold text-sm shadow hover:brightness-110 transition-all flex items-center justify-center gap-1.5">
+            <i class="fa-solid fa-check"></i>
+            <span>નોંધ સાચવો (Save Entry)</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- (D) PROFESSIONAL A4 INVOICE & 1-CLICK WHATSAPP MODAL -->
+  <div id="modal-invoice" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 hidden">
+    <div class="bg-white text-slate-900 max-w-2xl w-full max-h-[95vh] overflow-y-auto rounded-2xl shadow-2xl relative flex flex-col">
+      
+      <!-- Modal Action Bar (Sticky at top, hidden in print) -->
+      <div class="no-print bg-slate-900 text-white px-4 py-3 flex items-center justify-between border-b border-white/10 rounded-t-2xl">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-file-invoice text-csc-sky"></i>
+          <span class="font-bold text-sm">CSC ડિજિટલ ગ્રાહક પાવતી (Customer Receipt)</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <!-- 1-Click WhatsApp Share -->
+          <button onclick="shareInvoiceViaWhatsApp()" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-1.5 shadow transition-all">
+            <i class="fa-brands fa-whatsapp text-sm"></i> WhatsApp બિલ મોકલો
+          </button>
+          <!-- Print A4 Button -->
+          <button onclick="printInvoiceDirect()" class="px-3 py-1.5 rounded-lg bg-csc-sky hover:bg-sky-400 text-slate-950 text-xs font-bold flex items-center gap-1.5 shadow transition-all">
+            <i class="fa-solid fa-print"></i> પ્રિન્ટ / PDF
+          </button>
+          <button onclick="closeInvoiceModal()" class="text-slate-400 hover:text-white text-lg ml-2">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Printable Invoice Section (Strict A4 Layout) -->
+      <div id="print-invoice-section" class="p-6 sm:p-8 space-y-6 bg-white text-slate-900">
+        
+        <!-- Official Tricolor Accent Bar -->
+        <div class="h-1.5 w-full flex rounded-full overflow-hidden mb-2">
+          <div class="h-full w-1/3 bg-[#FF9933]"></div>
+          <div class="h-full w-1/3 bg-white border-t border-b border-slate-200"></div>
+          <div class="h-full w-1/3 bg-[#138808]"></div>
+        </div>
+
+        <!-- Header: Center Branding -->
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b-2 border-slate-800 pb-4 gap-3">
+          <div>
+            <div class="inline-block px-2.5 py-0.5 rounded bg-blue-100 text-blue-800 text-[11px] font-extrabold uppercase tracking-wider mb-1">
+              Common Services Center | Jan Seva Kendra
+            </div>
+            <h1 class="text-2xl font-black text-slate-900 tracking-tight" id="inv-center-name">શ્રી ગણેશ જન સેવા કેન્દ્ર</h1>
+            <p class="text-xs text-slate-600 mt-0.5" id="inv-center-address">મુ. પો. તાલુકો, જિલ્લો - ગુજરાત</p>
+            <p class="text-xs text-slate-600">
+              સંચાલક: <strong id="inv-vle-name">પટેલ રમેશભાઈ</strong> | 
+              CSC ID: <strong id="inv-csc-id" class="font-mono">GJ12345678</strong> | 
+              મોબાઈલ: <strong id="inv-center-phone">9876543210</strong>
+            </p>
+          </div>
+
+          <div class="text-right sm:border-l-2 sm:border-slate-200 sm:pl-4 self-stretch flex flex-col justify-center">
+            <span class="text-xs font-bold text-slate-500 uppercase">પાવતી નં (Receipt No)</span>
+            <span class="text-lg font-black text-slate-900 font-mono" id="inv-receipt-no">CSC-2026-001</span>
+            <span class="text-xs text-slate-600 mt-1" id="inv-date-time">05-Nov-2026 10:30 AM</span>
+          </div>
+        </div>
+
+        <!-- Customer & Service Metadata Box -->
+        <div class="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs">
+          <div>
+            <p class="text-slate-500 uppercase font-semibold text-[10px]">ગ્રાહકની વિગત (Customer Details)</p>
+            <p class="text-sm font-bold text-slate-900 mt-1" id="inv-customer-name">ગ્રાહક ઉપલબ્ધ નથી</p>
+            <p class="text-slate-600" id="inv-customer-phone">મોબાઈલ: -</p>
+          </div>
+          <div>
+            <p class="text-slate-500 uppercase font-semibold text-[10px]">અરજી / ટ્રાન્ઝેક્શન વિગત</p>
+            <p class="text-slate-800 mt-1">અરજી / રેફ. નં: <strong class="font-mono text-slate-900" id="inv-ref-no">-</strong></p>
+            <p class="text-slate-800">ચુકવણી મોડ: <strong class="text-slate-900" id="inv-payment-mode">રોકડ (Cash)</strong></p>
+          </div>
+        </div>
+
+        <!-- Itemized Table -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs border border-slate-200">
+            <thead class="bg-slate-100 text-slate-700 font-bold uppercase border-b border-slate-200">
+              <tr>
+                <th class="p-3">ક્રમ</th>
+                <th class="p-3">સેવા / અરજીનું નામ (Service Description)</th>
+                <th class="p-3 text-right">સરકારી / પોર્ટલ ફી (₹)</th>
+                <th class="p-3 text-right">સર્વિસ ચાર્જ (₹)</th>
+                <th class="p-3 text-right">કુલ રકમ (₹)</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200">
+              <tr>
+                <td class="p-3 font-mono">1</td>
+                <td class="p-3 font-semibold text-slate-900" id="inv-table-service">આધાર કાર્ડ બાયોમેટ્રિક અપડેટ</td>
+                <td class="p-3 text-right font-mono" id="inv-table-gov-fee">₹50.00</td>
+                <td class="p-3 text-right font-mono" id="inv-table-vle-fee">₹50.00</td>
+                <td class="p-3 text-right font-bold text-slate-900 font-mono" id="inv-table-total">₹100.00</td>
+              </tr>
+            </tbody>
+            <tfoot class="bg-slate-50 font-bold border-t-2 border-slate-300">
+              <tr>
+                <td colspan="4" class="p-3 text-right text-slate-700">કુલ ચૂકવેલ રકમ (Grand Total Paid):</td>
+                <td class="p-3 text-right text-base text-slate-900 font-mono" id="inv-grand-total">₹100.00</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
+        <!-- Amount in Words -->
+        <div class="bg-emerald-50 border border-emerald-200 p-2.5 rounded-lg text-xs text-emerald-900 font-medium">
+          <span>અક્ષરે રકમ: </span>
+          <strong id="inv-amount-in-words" class="italic">એક સો રૂપિયા પૂરા / One Hundred Rupees Only</strong>
+        </div>
+
+        <!-- Terms, Stamp & Signatures -->
+        <div class="pt-6 grid grid-cols-2 gap-8 items-end border-t border-slate-200">
+          <div class="text-[11px] text-slate-500 space-y-1">
+            <p class="font-bold text-slate-700">નિયમો અને સૂચના:</p>
+            <p>1. આ કમ્પ્યુટર જનરેટેડ અધિકૃત પાવતી છે. સહી કે સીલ વગર પણ માન્ય છે.</p>
+            <p>2. અરજીની સ્થિતિ માટે તમારા આપેલ મોબાઈલ નંબર પર એસએમએસ આવશે.</p>
+            <p>3. આપની મુલાકાત બદલ આભાર! જન સેવા કેન્દ્ર હંમેશા આપની સેવામાં.</p>
+          </div>
+
+          <div class="text-center flex flex-col items-center">
+            <div class="w-36 h-16 border-2 border-dashed border-slate-300 rounded flex items-center justify-center text-slate-400 text-[10px] mb-1">
+              [VLE સિક્કો / Stamp]
+            </div>
+            <p class="text-xs font-bold text-slate-800">અધિકૃત સંચાલક સહી</p>
+            <p class="text-[10px] text-slate-500" id="inv-sign-vle">પટેલ રમેશભાઈ (VLE)</p>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- (E) SMART VOICE INPUT MODAL -->
+  <div id="modal-voice" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="csc-card max-w-sm w-full p-6 text-center space-y-4 border border-csc-gold/30 shadow-2xl relative">
+      <button onclick="closeVoiceModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div class="w-16 h-16 mx-auto rounded-full bg-csc-gold/20 flex items-center justify-center text-csc-gold text-2xl voice-pulse">
+        <i class="fa-solid fa-microphone"></i>
+      </div>
+
+      <div>
+        <h3 class="font-bold text-white text-lg">ગુજરાતીમાં બોલો</h3>
+        <p class="text-xs text-slate-400 mt-1">ઉદાહરણ તરીકે નીચે મુજબ બોલો:</p>
+        <p class="text-xs text-csc-sky bg-slate-900 p-2 rounded-lg mt-2 font-medium italic">
+          "રમેશભાઈનું પાન કાર્ડ બનાવ્યું 200 રૂપિયા રોકડા મળ્યા"
+        </p>
+      </div>
+
+      <div id="voice-recognized-text" class="min-h-[40px] text-sm font-semibold text-emerald-400 p-2 bg-slate-900/80 rounded-xl border border-white/5">
+        સાંભળી રહ્યું છે... બોલો...
+      </div>
+
+      <div class="flex items-center gap-2 pt-2">
+        <button onclick="stopVoiceRecognition()" class="w-full py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs border border-white/10 transition-all">
+          બંધ કરો / રદ કરો
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="fixed bottom-20 md:bottom-6 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- ==================== 4. APPLICATION JAVASCRIPT ==================== -->
+  <script>
+    /**
+     * JAN SEVA KENDRA - CSC DIGITAL KHATA & BILLING SYSTEM
+     * Standalone Single-File Web & Mobile Portal
+     */
+
+    // --- State Management ---
+    let currentTab = 'dashboard';
+    let currentDateFilter = 'today';
+    let activeInvoiceTransaction = null;
+    let recognition = null;
+    let monthlyChart = null;
+    let categoryChart = null;
+
+    // Service Categories for CSC VLEs
+    const SERVICE_CATEGORIES = [
+      { id: 'aadhaar', name: 'Aadhaar Update', gu: 'આધાર કાર્ડ અપડેટ / બાયોમેટ્રિક', icon: 'fa-fingerprint', color: '#38bdf8' },
+      { id: 'pan', name: 'PAN Card', gu: 'નવું પાન કાર્ડ / સુધારો', icon: 'fa-id-card', color: '#10b981' },
+      { id: 'ayushman', name: 'Ayushman Card', gu: 'આયુષ્માન ભારત કાર્ડ (PM-JAY)', icon: 'fa-heart-pulse', color: '#f43f5e' },
+      { id: 'pmkisan', name: 'PM Kisan', gu: 'પીએમ કિસાન eKYC / નોંધણી', icon: 'fa-seedling', color: '#fbbf24' },
+      { id: 'aeps', name: 'AEPS Cash Withdrawal', gu: 'AEPS આધાર રોકડ ઉપાડ', icon: 'fa-money-bill-transfer', color: '#a855f7' },
+      { id: 'billpay', name: 'Bill Payment', gu: 'લાઈટબિલ / ગેસ / રિચાર્જ', icon: 'fa-bolt', color: '#f97316' },
+      { id: 'onlineforms', name: 'Online Application', gu: 'સરકારી યોજના ઓનલાઇન ફોર્મ', icon: 'fa-file-lines', color: '#06b6d4' },
+      { id: 'xerox', name: 'Xerox & Print', gu: 'ઝેરોક્ષ / કલર પ્રિન્ટ / લેમિનેશન', icon: 'fa-print', color: '#ec4899' },
+      { id: 'other_income', name: 'Other CSC Services', gu: 'અન્ય સેવા / આવક', icon: 'fa-circle-dollar-to-slot', color: '#64748b' }
+    ];
+
+    const EXPENSE_CATEGORIES = [
+      { id: 'paper', name: 'Paper Rim', gu: 'ઝેરોક્ષ કાગળ રિમ (A4 Paper)', icon: 'fa-copy' },
+      { id: 'toner', name: 'Cartridge / Toner Refill', gu: 'પ્રિન્ટર શાહી / ટોનર રિફિલ', icon: 'fa-fill-drip' },
+      { id: 'electricity', name: 'Electricity Bill', gu: 'દુકાન લાઈટબિલ / ઈન્ટરનેટ', icon: 'fa-plug' },
+      { id: 'rent', name: 'Shop Rent', gu: 'દુકાન ભાડું (Shop Rent)', icon: 'fa-shop' },
+      { id: 'tea', name: 'Tea & Snacks', gu: 'ચા-નાસ્તો / પરચુરણ ખર્ચ', icon: 'fa-mug-hot' },
+      { id: 'other_expense', name: 'Other Expense', gu: 'અન્ય સામાન્ય ખર્ચ', icon: 'fa-receipt' }
+    ];
+
+    // Default Profile
+    const DEFAULT_PROFILE = {
+      centerName: 'શ્રી ગણેશ જન સેવા કેન્દ્ર',
+      vleName: 'પટેલ રમેશભાઈ',
+      cscId: 'GJ12345678',
+      mobile: '9876543210',
+      upiId: '9876543210@paytm',
+      openingCash: 5000,
+      openingBank: 15000,
+      address: 'દુકાન નં. ૪, પંચાયત શોપિંગ સેન્ટર, તાલુકો - વિસનગર, જિલ્લો - મહેસાણા'
+    };
+
+    // Default Seed Transactions (Realistic CSC Data)
+    const SAMPLE_TRANSACTIONS = [
+      {
+        id: 'tx_101',
+        type: 'INCOME',
+        category: 'Aadhaar Update',
+        amount: 100,
+        mode: 'Cash',
+        customerName: 'હસમુખભાઈ રાવળ',
+        customerPhone: '9825012345',
+        referenceNo: 'UID-8947-2026',
+        notes: 'બાયોમેટ્રિક અપડેટ',
+        timestamp: new Date().setHours(9, 30, 0, 0)
+      },
+      {
+        id: 'tx_102',
+        type: 'INCOME',
+        category: 'PAN Card',
+        amount: 150,
+        mode: 'UPI / QR',
+        customerName: 'જયેશ પટેલ',
+        customerPhone: '9428056789',
+        referenceNo: 'PAN-2026-091',
+        notes: 'નવું પાન કાર્ડ એપ્લિકેશન',
+        timestamp: new Date().setHours(10, 15, 0, 0)
+      },
+      {
+        id: 'tx_103',
+        type: 'EXPENSE',
+        category: 'Paper Rim',
+        amount: 550,
+        mode: 'Cash',
+        customerName: 'સ્ટેશનરી માર્ટ',
+        customerPhone: '',
+        referenceNo: 'INV-441',
+        notes: '૨ રીમ A4 75GSM કાગળ',
+        timestamp: new Date().setHours(11, 0, 0, 0)
+      },
+      {
+        id: 'tx_104',
+        type: 'INCOME',
+        category: 'Ayushman Card',
+        amount: 50,
+        mode: 'Cash',
+        customerName: 'ગીતાબેન ઠાકોર',
+        customerPhone: '9712098765',
+        referenceNo: 'AYUSH-778',
+        notes: 'પીવીસી કાર્ડ પ્રિન્ટિંગ',
+        timestamp: new Date().setHours(11, 45, 0, 0)
+      },
+      {
+        id: 'tx_105',
+        type: 'INCOME',
+        category: 'PM Kisan',
+        amount: 50,
+        mode: 'UPI / QR',
+        customerName: 'કાળુભાઈ ચૌધરી',
+        customerPhone: '9909011223',
+        referenceNo: 'PMK-432',
+        notes: 'eKYC ફિંગરપ્રિન્ટ',
+        timestamp: new Date().setHours(12, 10, 0, 0)
+      },
+      {
+        id: 'tx_106',
+        type: 'INCOME',
+        category: 'AEPS Cash Withdrawal',
+        amount: 40,
+        mode: 'Cash',
+        aepsCashGiven: 2000,
+        customerName: 'બાબુભાઈ પરમાર',
+        customerPhone: '9824088990',
+        referenceNo: 'RRN-998811',
+        notes: 'SBI ૨૦૦૦ કેશ ઉપાડ',
+        timestamp: new Date().setHours(13, 0, 0, 0)
+      },
+      {
+        id: 'tx_107',
+        type: 'EXPENSE',
+        category: 'Tea & Snacks',
+        amount: 60,
+        mode: 'Cash',
+        customerName: 'રામદેવ ટી સ્ટોલ',
+        customerPhone: '',
+        referenceNo: '',
+        notes: 'બપોરની ચા',
+        timestamp: new Date().setHours(14, 0, 0, 0)
+      },
+      {
+        id: 'tx_108',
+        type: 'INCOME',
+        category: 'Xerox & Print',
+        amount: 120,
+        mode: 'Cash',
+        customerName: 'વિદ્યાર્થીઓ',
+        customerPhone: '',
+        referenceNo: '',
+        notes: 'પરીક્ષા હોલટિકિટ કલર પ્રિન્ટ',
+        timestamp: new Date().setHours(15, 20, 0, 0)
+      }
+    ];
+
+    // --- Local Storage Helpers ---
+    function getStoredData(key, fallback) {
+      try {
+        const val = localStorage.getItem(key);
+        return val ? JSON.parse(val) : fallback;
+      } catch (e) {
+        return fallback;
+      }
+    }
+
+    function setStoredData(key, val) {
+      try {
+        localStorage.setItem(key, JSON.stringify(val));
+      } catch (e) {
+        console.error("Storage error:", e);
+      }
+    }
+
+    // Load active state
+    let profile = getStoredData('csc_profile', DEFAULT_PROFILE);
+    let transactions = getStoredData('csc_transactions', null);
+    if (!transactions || !Array.isArray(transactions) || transactions.length === 0) {
+      transactions = SAMPLE_TRANSACTIONS;
+      setStoredData('csc_transactions', transactions);
+    }
+
+    // --- Authentication Gate ---
+    function checkAuthGate() {
+      const isAuth = sessionStorage.getItem('csc_auth') === 'true';
+      const loginModal = document.getElementById('modal-login');
+      if (!isAuth) {
+        loginModal.classList.remove('hidden');
+      } else {
+        loginModal.classList.add('hidden');
+      }
+    }
+
+    function handleLoginSubmit(e) {
+      e.preventDefault();
+      const user = document.getElementById('login-username').value.trim();
+      const pass = document.getElementById('login-password').value;
+      const storedPass = localStorage.getItem('csc_admin_password') || '1234';
+
+      if (user === 'admin' && pass === storedPass) {
+        sessionStorage.setItem('csc_auth', 'true');
+        document.getElementById('modal-login').classList.add('hidden');
+        showToast("સફળતાપૂર્વક લૉગિન થયા!", "success");
+      } else {
+        document.getElementById('login-error-msg').classList.remove('hidden');
+      }
+    }
+
+    function handleLogout() {
+      if (confirm("શું તમે લૉગ આઉટ કરવા માંગો છો?")) {
+        sessionStorage.removeItem('csc_auth');
+        checkAuthGate();
+      }
+    }
+
+    function handleChangePassword(e) {
+      e.preventDefault();
+      const curr = document.getElementById('curr-password').value;
+      const newP = document.getElementById('new-password').value;
+      const storedPass = localStorage.getItem('csc_admin_password') || '1234';
+
+      if (curr !== storedPass) {
+        alert("હાલનો પાસવર્ડ ખોટો છે!");
+        return;
+      }
+      localStorage.setItem('csc_admin_password', newP);
+      document.getElementById('change-password-form').reset();
+      showToast("પાસવર્ડ સફળતાપૂર્વક બદલાઈ ગયો છે!", "success");
+    }
+
+    // --- Navigation Tabs ---
+    function switchTab(tabId) {
+      currentTab = tabId;
+      const views = ['dashboard', 'transactions', 'analytics', 'settings'];
+      views.forEach(v => {
+        const el = document.getElementById(`view-${v}`);
+        if (el) el.classList.toggle('hidden', v !== tabId);
+      });
+
+      // Update Desktop Tab Buttons
+      views.forEach(v => {
+        const btn = document.getElementById(`desktop-tab-${v}`);
+        if (btn) {
+          if (v === tabId) {
+            btn.className = "tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 bg-csc-sky text-slate-900 shadow";
+          } else {
+            btn.className = "tab-btn px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white transition-colors flex items-center gap-1.5";
+          }
+        }
+      });
+
+      // Update Mobile Tab Buttons
+      views.forEach(v => {
+        const btn = document.getElementById(`mobile-tab-${v}`);
+        if (btn) {
+          if (v === tabId) {
+            btn.classList.add('text-csc-sky');
+            btn.classList.remove('text-slate-400');
+            const span = btn.querySelector('span');
+            if (span) span.className = "text-[10px] font-bold mt-0.5";
+          } else {
+            btn.classList.remove('text-csc-sky');
+            btn.classList.add('text-slate-400');
+            const span = btn.querySelector('span');
+            if (span) span.className = "text-[10px] font-medium mt-0.5";
+          }
+        }
+      });
+
+      if (tabId === 'analytics') {
+        renderAnalyticsCharts();
+      } else if (tabId === 'transactions') {
+        applyAllFilters();
+      } else if (tabId === 'settings') {
+        loadSettingsInputs();
+      }
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // --- Date Filtering Logic ---
+    function setDateFilter(filterType) {
+      currentDateFilter = filterType;
+      const filters = ['today', 'yesterday', 'this_week', 'this_month', 'this_year', 'all'];
+      filters.forEach(f => {
+        const btn = document.getElementById(`filter-${f}`);
+        if (btn) {
+          if (f === filterType) {
+            btn.className = "date-filter-btn px-3 py-1.5 rounded-full font-semibold bg-csc-sky text-slate-900 shadow";
+          } else {
+            btn.className = "date-filter-btn px-3 py-1.5 rounded-full font-medium text-slate-400 hover:text-white bg-slate-800/80 border border-white/5";
+          }
+        }
+      });
+      renderDashboard();
+    }
+
+    function isTimestampMatchingFilter(ts, filterType) {
+      if (filterType === 'all') return true;
+      const d = new Date(ts);
+      const now = new Date();
+      
+      const isSameDay = (d1, d2) => d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth() && d1.getDate() === d2.getDate();
+
+      if (filterType === 'today') {
+        return isSameDay(d, now);
+      }
+      if (filterType === 'yesterday') {
+        const yesterday = new Date(now);
+        yesterday.setDate(now.getDate() - 1);
+        return isSameDay(d, yesterday);
+      }
+      if (filterType === 'this_week') {
+        const weekStart = new Date(now);
+        weekStart.setDate(now.getDate() - now.getDay());
+        weekStart.setHours(0, 0, 0, 0);
+        return d >= weekStart;
+      }
+      if (filterType === 'this_month') {
+        return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+      }
+      if (filterType === 'this_year') {
+        return d.getFullYear() === now.getFullYear();
+      }
+      return true;
+    }
+
+    // --- Financial Calculations & Dashboard Rendering ---
+    function renderDashboard() {
+      // Filter transactions
+      const filtered = transactions.filter(t => isTimestampMatchingFilter(t.timestamp, currentDateFilter));
+
+      let totalIncome = 0;
+      let totalExpense = 0;
+      let incomeCount = 0;
+      let expenseCount = 0;
+
+      // Filtered aggregates
+      filtered.forEach(t => {
+        if (t.type === 'INCOME') {
+          totalIncome += Number(t.amount || 0);
+          incomeCount++;
+        } else {
+          totalExpense += Number(t.amount || 0);
+          expenseCount++;
+        }
+      });
+
+      const netProfit = totalIncome - totalExpense;
+
+      // Cumulative Balances (from all time + opening balances)
+      let cumulativeCashIncome = 0;
+      let cumulativeCashExpense = 0;
+      let cumulativeAepsCashGiven = 0;
+
+      let cumulativeBankIncome = 0;
+      let cumulativeBankExpense = 0;
+
+      transactions.forEach(t => {
+        const amt = Number(t.amount || 0);
+        if (t.type === 'INCOME') {
+          if (t.mode === 'Cash') {
+            cumulativeCashIncome += amt;
+          } else {
+            cumulativeBankIncome += amt;
+          }
+        } else {
+          if (t.mode === 'Cash') {
+            cumulativeCashExpense += amt;
+          } else {
+            cumulativeBankExpense += amt;
+          }
+        }
+        if (t.aepsCashGiven) {
+          cumulativeAepsCashGiven += Number(t.aepsCashGiven);
+        }
+      });
+
+      const cashInHand = (Number(profile.openingCash) || 0) + cumulativeCashIncome - cumulativeCashExpense - cumulativeAepsCashGiven;
+      const bankBalance = (Number(profile.openingBank) || 0) + cumulativeBankIncome - cumulativeBankExpense;
+
+      // Update KPI Cards
+      document.getElementById('card-net-profit').textContent = `₹${netProfit.toLocaleString('en-IN')}`;
+      document.getElementById('card-cash-in-hand').textContent = `₹${cashInHand.toLocaleString('en-IN')}`;
+      document.getElementById('card-bank-balance').textContent = `₹${bankBalance.toLocaleString('en-IN')}`;
+      document.getElementById('card-total-income').textContent = `₹${totalIncome.toLocaleString('en-IN')}`;
+      document.getElementById('card-income-count').textContent = `${incomeCount} વ્યવહાર`;
+      document.getElementById('card-total-expense').textContent = `₹${totalExpense.toLocaleString('en-IN')}`;
+      document.getElementById('card-expense-count').textContent = `${expenseCount} વ્યવહાર`;
+
+      document.getElementById('ledger-item-count').textContent = `${filtered.length} નોંધ`;
+
+      // Render Table Rows
+      const tbody = document.getElementById('dashboard-ledger-tbody');
+      const mobileList = document.getElementById('dashboard-ledger-mobile');
+      const emptyState = document.getElementById('dashboard-empty-state');
+
+      tbody.innerHTML = '';
+      mobileList.innerHTML = '';
+
+      if (filtered.length === 0) {
+        emptyState.classList.remove('hidden');
+      } else {
+        emptyState.classList.add('hidden');
+
+        // Sort descending by timestamp
+        const sorted = [...filtered].sort((a, b) => b.timestamp - a.timestamp);
+
+        sorted.forEach(item => {
+          const isIncome = item.type === 'INCOME';
+          const timeStr = formatDateTime(item.timestamp);
+          const iconInfo = getCategoryIconInfo(item.category, item.type);
+
+          // Desktop Row
+          const tr = document.createElement('tr');
+          tr.className = "hover:bg-slate-800/40 transition-colors";
+          tr.innerHTML = `
+            <td class="px-4 py-3 text-slate-400 text-xs">
+              <div class="font-medium text-slate-300">${timeStr.time}</div>
+              <div class="text-[11px] text-slate-500">${timeStr.date}</div>
+            </td>
+            <td class="px-4 py-3">
+              <div class="flex items-center gap-2">
+                <div class="w-7 h-7 rounded-lg ${isIncome ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'} flex items-center justify-center text-xs">
+                  <i class="fa-solid ${iconInfo.icon}"></i>
+                </div>
+                <div>
+                  <div class="font-bold text-white text-xs sm:text-sm">${escapeHtml(item.category)}</div>
+                  ${item.notes ? `<div class="text-[11px] text-slate-400 truncate max-w-[150px]">${escapeHtml(item.notes)}</div>` : ''}
+                </div>
+              </div>
+            </td>
+            <td class="px-4 py-3">
+              <div class="font-medium text-slate-200 text-xs">${escapeHtml(item.customerName || 'ગ્રાહક નથી')}</div>
+              <div class="text-[11px] text-slate-400 font-mono">${escapeHtml(item.customerPhone || item.referenceNo || '-')}</div>
+            </td>
+            <td class="px-4 py-3">
+              <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold ${item.mode === 'Cash' ? 'bg-amber-500/10 text-amber-300 border border-amber-500/20' : 'bg-sky-500/10 text-sky-300 border border-sky-500/20'}">
+                <i class="fa-solid ${item.mode === 'Cash' ? 'fa-money-bill' : 'fa-mobile-screen'} mr-1"></i>
+                ${item.mode}
+              </span>
+            </td>
+            <td class="px-4 py-3 text-right">
+              <span class="text-sm font-bold ${isIncome ? 'text-emerald-400' : 'text-rose-400'}">
+                ${isIncome ? '+' : '-'} ₹${Number(item.amount).toLocaleString('en-IN')}
+              </span>
+              ${item.aepsCashGiven ? `<div class="text-[10px] text-amber-400">કેશ આઉટ: ₹${Number(item.aepsCashGiven).toLocaleString('en-IN')}</div>` : ''}
+            </td>
+            <td class="px-4 py-3 text-center">
+              <div class="flex items-center justify-center gap-1.5">
+                ${isIncome ? `
+                  <button onclick="openInvoiceModal('${item.id}')" class="px-2.5 py-1 rounded-lg bg-csc-sky/10 hover:bg-csc-sky/20 text-csc-sky border border-csc-sky/30 text-xs font-semibold flex items-center gap-1 transition-colors" title="પાવતી બનાવો">
+                    <i class="fa-solid fa-file-invoice"></i> બિલ
+                  </button>
+                ` : ''}
+                <button onclick="deleteTransaction('${item.id}')" class="p-1.5 text-slate-400 hover:text-rose-400 rounded-lg hover:bg-rose-500/10 transition-colors" title="ડિલીટ">
+                  <i class="fa-regular fa-trash-can text-xs"></i>
+                </button>
+              </div>
+            </td>
+          `;
+          tbody.appendChild(tr);
+
+          // Mobile Card Item
+          const mobDiv = document.createElement('div');
+          mobDiv.className = "p-3.5 flex items-center justify-between gap-3 hover:bg-slate-900/40";
+          mobDiv.innerHTML = `
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl ${isIncome ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'} flex items-center justify-center text-sm">
+                <i class="fa-solid ${iconInfo.icon}"></i>
+              </div>
+              <div>
+                <div class="font-bold text-white text-xs sm:text-sm flex items-center gap-1.5">
+                  <span>${escapeHtml(item.category)}</span>
+                  <span class="text-[10px] px-1.5 py-0.2 rounded font-mono ${item.mode === 'Cash' ? 'bg-amber-500/10 text-amber-400' : 'bg-sky-500/10 text-sky-400'}">${item.mode}</span>
+                </div>
+                <div class="text-[11px] text-slate-400 mt-0.5">
+                  ${escapeHtml(item.customerName || 'ગ્રાહક નથી')} • ${timeStr.time}
+                </div>
+              </div>
+            </div>
+            <div class="text-right flex flex-col items-end gap-1">
+              <div class="font-bold text-sm ${isIncome ? 'text-emerald-400' : 'text-rose-400'}">
+                ${isIncome ? '+' : '-'} ₹${Number(item.amount).toLocaleString('en-IN')}
+              </div>
+              <div class="flex items-center gap-1">
+                ${isIncome ? `
+                  <button onclick="openInvoiceModal('${item.id}')" class="px-2 py-0.5 rounded bg-csc-sky/20 text-csc-sky text-[10px] font-bold">
+                    બિલ
+                  </button>
+                ` : ''}
+                <button onclick="deleteTransaction('${item.id}')" class="p-1 text-slate-500 hover:text-rose-400">
+                  <i class="fa-solid fa-trash text-[11px]"></i>
+                </button>
+              </div>
+            </div>
+          `;
+          mobileList.appendChild(mobDiv);
+        });
+      }
+    }
+
+    // --- Search & Filter in "બધા વ્યવહાર" View ---
+    function applyAllFilters() {
+      const query = (document.getElementById('transactions-search-input')?.value || '').toLowerCase().trim();
+      const typeFilter = document.getElementById('transactions-type-select')?.value || 'ALL';
+      const categoryFilter = document.getElementById('transactions-category-select')?.value || 'ALL';
+
+      const filtered = transactions.filter(t => {
+        if (typeFilter !== 'ALL' && t.type !== typeFilter) return false;
+        if (categoryFilter !== 'ALL' && t.category !== categoryFilter) return false;
+        if (query) {
+          const matchName = (t.customerName || '').toLowerCase().includes(query);
+          const matchPhone = (t.customerPhone || '').toLowerCase().includes(query);
+          const matchRef = (t.referenceNo || '').toLowerCase().includes(query);
+          const matchCat = (t.category || '').toLowerCase().includes(query);
+          const matchNotes = (t.notes || '').toLowerCase().includes(query);
+          if (!matchName && !matchPhone && !matchRef && !matchCat && !matchNotes) return false;
+        }
+        return true;
+      });
+
+      const tbody = document.getElementById('all-transactions-tbody');
+      const emptyState = document.getElementById('all-transactions-empty');
+      tbody.innerHTML = '';
+
+      if (filtered.length === 0) {
+        emptyState.classList.remove('hidden');
+      } else {
+        emptyState.classList.add('hidden');
+        const sorted = [...filtered].sort((a, b) => b.timestamp - a.timestamp);
+
+        sorted.forEach(item => {
+          const isIncome = item.type === 'INCOME';
+          const timeStr = formatDateTime(item.timestamp);
+          const iconInfo = getCategoryIconInfo(item.category, item.type);
+
+          const tr = document.createElement('tr');
+          tr.className = "hover:bg-slate-800/40 transition-colors";
+          tr.innerHTML = `
+            <td class="px-4 py-3 text-slate-300 text-xs">
+              <div class="font-medium">${timeStr.date}</div>
+              <div class="text-[11px] text-slate-500">${timeStr.time}</div>
+            </td>
+            <td class="px-4 py-3">
+              <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold ${isIncome ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'}">
+                ${isIncome ? 'આવક (Income)' : 'ખર્ચ (Expense)'}
+              </span>
+            </td>
+            <td class="px-4 py-3">
+              <div class="flex items-center gap-2">
+                <i class="fa-solid ${iconInfo.icon} text-slate-400 text-xs"></i>
+                <span class="font-bold text-white text-xs">${escapeHtml(item.category)}</span>
+              </div>
+              ${item.notes ? `<div class="text-[11px] text-slate-400">${escapeHtml(item.notes)}</div>` : ''}
+            </td>
+            <td class="px-4 py-3 text-xs">
+              <div class="font-semibold text-slate-200">${escapeHtml(item.customerName || '-')}</div>
+              <div class="text-[11px] text-slate-400">${escapeHtml(item.customerPhone || '')} ${item.referenceNo ? `• ${escapeHtml(item.referenceNo)}` : ''}</div>
+            </td>
+            <td class="px-4 py-3 text-xs">
+              <span class="px-2 py-0.5 rounded font-mono ${item.mode === 'Cash' ? 'bg-amber-500/10 text-amber-300' : 'bg-sky-500/10 text-sky-300'}">
+                ${item.mode}
+              </span>
+            </td>
+            <td class="px-4 py-3 text-right">
+              <div class="font-bold text-sm ${isIncome ? 'text-emerald-400' : 'text-rose-400'}">
+                ${isIncome ? '+' : '-'} ₹${Number(item.amount).toLocaleString('en-IN')}
+              </div>
+            </td>
+            <td class="px-4 py-3 text-center">
+              ${isIncome ? `
+                <button onclick="openInvoiceModal('${item.id}')" class="px-2.5 py-1 rounded-lg bg-csc-sky/20 hover:bg-csc-sky/30 text-csc-sky text-xs font-semibold flex items-center gap-1 mx-auto transition-colors">
+                  <i class="fa-solid fa-file-invoice"></i> બિલ
+                </button>
+              ` : `<span class="text-slate-600 text-xs">-</span>`}
+            </td>
+            <td class="px-4 py-3 text-center">
+              <button onclick="deleteTransaction('${item.id}')" class="p-1.5 text-slate-400 hover:text-rose-400 rounded hover:bg-rose-500/10 transition-colors">
+                <i class="fa-regular fa-trash-can"></i>
+              </button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+    }
+
+    // Populate Category Filter Dropdown in All Transactions
+    function populateCategoryDropdown() {
+      const select = document.getElementById('transactions-category-select');
+      if (!select) return;
+      select.innerHTML = '<option value="ALL">બધી કેટેગરી (All Categories)</option>';
+
+      SERVICE_CATEGORIES.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.name;
+        opt.textContent = `[આવક] ${c.gu}`;
+        select.appendChild(opt);
+      });
+
+      EXPENSE_CATEGORIES.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.name;
+        opt.textContent = `[ખર્ચ] ${c.gu}`;
+        select.appendChild(opt);
+      });
+    }
+
+    // --- Dynamic UPI QR Code Payment ---
+    function openUpiQrModal() {
+      document.getElementById('modal-upi-qr').classList.remove('hidden');
+      generateDynamicQrCode();
+    }
+
+    function closeUpiQrModal() {
+      document.getElementById('modal-upi-qr').classList.add('hidden');
+    }
+
+    function setQrAmount(val) {
+      document.getElementById('qr-input-amount').value = val;
+      generateDynamicQrCode();
+    }
+
+    function generateDynamicQrCode() {
+      const amount = parseFloat(document.getElementById('qr-input-amount').value) || 0;
+      const upiId = profile.upiId || '9876543210@paytm';
+      const center = profile.centerName || 'Jan Seva Kendra';
+      const service = document.getElementById('qr-input-category')?.value || 'Fee';
+
+      document.getElementById('qr-display-amount').textContent = `ચૂકવવાપાત્ર રકમ: ₹${amount.toFixed(2)}`;
+      document.getElementById('qr-display-upi').textContent = `UPI ID: ${upiId}`;
+
+      // Standard NPCI UPI URI Scheme
+      // upi://pay?pa={VLE_UPI_ID}&pn={CENTER_NAME}&am={AMOUNT}&cu=INR&tn={NOTE}
+      const note = `CSC_${service.replace(/\s+/g, '_')}`;
+      const upiUrl = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(center)}&am=${amount.toFixed(2)}&cu=INR&tn=${encodeURIComponent(note)}`;
+
+      const container = document.getElementById('qrcode-canvas');
+      container.innerHTML = '';
+      new QRCode(container, {
+        text: upiUrl,
+        width: 180,
+        height: 180,
+        colorDark: "#070c18",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.M
+      });
+    }
+
+    function confirmUpiPaymentReceived() {
+      const amount = parseFloat(document.getElementById('qr-input-amount').value) || 0;
+      if (amount <= 0) {
+        alert("કૃપા કરીને માન્ય રકમ દાખલ કરો!");
+        return;
+      }
+      const category = document.getElementById('qr-input-category')?.value || 'Aadhaar Update';
+      const customer = document.getElementById('qr-input-customer')?.value.trim() || 'UPI Customer';
+
+      const newTx = {
+        id: 'tx_' + Date.now(),
+        type: 'INCOME',
+        category: category,
+        amount: amount,
+        mode: 'UPI / QR',
+        customerName: customer,
+        customerPhone: '',
+        referenceNo: 'UPI-' + Math.floor(100000 + Math.random() * 900000),
+        notes: 'QR પેમેન્ટ દ્વારા તાત્કાલિક જમા',
+        timestamp: Date.now()
+      };
+
+      transactions.unshift(newTx);
+      setStoredData('csc_transactions', transactions);
+
+      closeUpiQrModal();
+      renderDashboard();
+      showToast(`₹${amount} UPI પેમેન્ટ સફળતાપૂર્વક રોજમેળમાં જમા થયું!`, "success");
+    }
+
+    // --- Add / Edit Transaction Modal ---
+    let currentModalType = 'INCOME';
+
+    function openAddTransactionModal(type = 'INCOME') {
+      currentModalType = type;
+      document.getElementById('edit-transaction-id').value = '';
+      document.getElementById('form-transaction').reset();
+      document.getElementById('modal-transaction-title').textContent = type === 'INCOME' ? 'નવી આવક નોંધો (Add Income)' : 'નવો ખર્ચ નોંધો (Add Expense)';
+      setModalTransactionType(type);
+      document.getElementById('modal-transaction').classList.remove('hidden');
+    }
+
+    function closeTransactionModal() {
+      document.getElementById('modal-transaction').classList.add('hidden');
+    }
+
+    function setModalTransactionType(type) {
+      currentModalType = type;
+      const isIncome = type === 'INCOME';
+
+      // Toggle button styles
+      const incBtn = document.getElementById('type-toggle-income');
+      const expBtn = document.getElementById('type-toggle-expense');
+      const icon = document.getElementById('modal-type-icon');
+      const aepsBox = document.getElementById('aeps-special-box');
+
+      if (isIncome) {
+        incBtn.className = "py-1.5 rounded-lg text-xs font-bold transition-all bg-emerald-500 text-slate-950 shadow";
+        expBtn.className = "py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition-all";
+        icon.className = "w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-lg";
+        icon.innerHTML = '<i class="fa-solid fa-plus"></i>';
+      } else {
+        expBtn.className = "py-1.5 rounded-lg text-xs font-bold transition-all bg-rose-500 text-white shadow";
+        incBtn.className = "py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition-all";
+        icon.className = "w-9 h-9 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center text-lg";
+        icon.innerHTML = '<i class="fa-solid fa-minus"></i>';
+      }
+
+      // Populate Category dropdown
+      const catSelect = document.getElementById('modal-field-category');
+      catSelect.innerHTML = '';
+      const list = isIncome ? SERVICE_CATEGORIES : EXPENSE_CATEGORIES;
+      list.forEach(item => {
+        const opt = document.createElement('option');
+        opt.value = item.name;
+        opt.textContent = `${item.gu} (${item.name})`;
+        catSelect.appendChild(opt);
+      });
+
+      // AEPS check
+      catSelect.onchange = () => {
+        if (catSelect.value === 'AEPS Cash Withdrawal') {
+          aepsBox.classList.remove('hidden');
+        } else {
+          aepsBox.classList.add('hidden');
+        }
+      };
+
+      if (isIncome && catSelect.value === 'AEPS Cash Withdrawal') {
+        aepsBox.classList.remove('hidden');
+      } else {
+        aepsBox.classList.add('hidden');
+      }
+    }
+
+    function handleTransactionSubmit(e) {
+      e.preventDefault();
+      const id = document.getElementById('edit-transaction-id').value;
+      const category = document.getElementById('modal-field-category').value;
+      const amount = parseFloat(document.getElementById('modal-field-amount').value);
+      const mode = document.getElementById('modal-field-mode').value;
+      const customer = document.getElementById('modal-field-customer').value.trim();
+      const phone = document.getElementById('modal-field-phone').value.trim();
+      const ref = document.getElementById('modal-field-ref').value.trim();
+      const notes = document.getElementById('modal-field-notes').value.trim();
+      const aepsCash = parseFloat(document.getElementById('modal-field-aeps')?.value) || 0;
+
+      if (!amount || amount <= 0) {
+        alert("કૃપા કરીને માન્ય રકમ દાખલ કરો!");
+        return;
+      }
+
+      if (id) {
+        // Edit existing
+        const idx = transactions.findIndex(t => t.id === id);
+        if (idx !== -1) {
+          transactions[idx] = {
+            ...transactions[idx],
+            type: currentModalType,
+            category,
+            amount,
+            mode,
+            customerName: customer,
+            customerPhone: phone,
+            referenceNo: ref,
+            notes,
+            aepsCashGiven: aepsCash > 0 ? aepsCash : undefined
+          };
+          showToast("વ્યવહાર અપડેટ થયો!", "success");
+        }
+      } else {
+        // New entry
+        const newTx = {
+          id: 'tx_' + Date.now(),
+          type: currentModalType,
+          category,
+          amount,
+          mode,
+          customerName: customer,
+          customerPhone: phone,
+          referenceNo: ref || ('CSC-' + Math.floor(1000 + Math.random() * 9000)),
+          notes,
+          aepsCashGiven: aepsCash > 0 ? aepsCash : undefined,
+          timestamp: Date.now()
+        };
+        transactions.unshift(newTx);
+        showToast(currentModalType === 'INCOME' ? "આવક નોંધાઈ ગઈ!" : "ખર્ચ નોંધાઈ ગયો!", "success");
+      }
+
+      setStoredData('csc_transactions', transactions);
+      closeTransactionModal();
+      renderDashboard();
+      if (currentTab === 'transactions') applyAllFilters();
+    }
+
+    function deleteTransaction(id) {
+      if (confirm("શું તમે આ વ્યવહાર ડિલીટ કરવા માંગો છો?")) {
+        transactions = transactions.filter(t => t.id !== id);
+        setStoredData('csc_transactions', transactions);
+        renderDashboard();
+        if (currentTab === 'transactions') applyAllFilters();
+        showToast("વ્યવહાર ડિલીટ થયો!", "info");
+      }
+    }
+
+    // --- Professional A4 Invoice Generation & WhatsApp ---
+    function openInvoiceModal(transactionId) {
+      const item = transactions.find(t => t.id === transactionId);
+      if (!item) return;
+
+      activeInvoiceTransaction = item;
+
+      // Populate Header Info
+      document.getElementById('inv-center-name').textContent = profile.centerName;
+      document.getElementById('inv-center-address').textContent = profile.address;
+      document.getElementById('inv-vle-name').textContent = profile.vleName;
+      document.getElementById('inv-csc-id').textContent = profile.cscId;
+      document.getElementById('inv-center-phone').textContent = profile.mobile;
+      document.getElementById('inv-sign-vle').textContent = `${profile.vleName} (VLE)`;
+
+      // Receipt Metadata
+      const timeStr = formatDateTime(item.timestamp);
+      document.getElementById('inv-receipt-no').textContent = item.referenceNo || `CSC-${new Date(item.timestamp).getFullYear()}-${item.id.slice(-4)}`;
+      document.getElementById('inv-date-time').textContent = `${timeStr.date} ${timeStr.time}`;
+
+      // Customer Details
+      document.getElementById('inv-customer-name').textContent = item.customerName || 'સામાન્ય ગ્રાહક (Walk-in Customer)';
+      document.getElementById('inv-customer-phone').textContent = item.customerPhone ? `મોબાઈલ: ${item.customerPhone}` : 'મોબાઈલ: ઉપલબ્ધ નથી';
+      document.getElementById('inv-ref-no').textContent = item.referenceNo || '-';
+      document.getElementById('inv-payment-mode').textContent = item.mode === 'Cash' ? 'રોકડ (Cash)' : item.mode;
+
+      // Table Breakdown
+      const amount = Number(item.amount);
+      const half = (amount / 2).toFixed(2);
+      document.getElementById('inv-table-service').textContent = item.category + (item.notes ? ` (${item.notes})` : '');
+      document.getElementById('inv-table-gov-fee').textContent = `₹${half}`;
+      document.getElementById('inv-table-vle-fee').textContent = `₹${half}`;
+      document.getElementById('inv-table-total').textContent = `₹${amount.toFixed(2)}`;
+      document.getElementById('inv-grand-total').textContent = `₹${amount.toFixed(2)}`;
+
+      // Amount in words
+      document.getElementById('inv-amount-in-words').textContent = numberToGujaratiWords(amount);
+
+      document.getElementById('modal-invoice').classList.remove('hidden');
+    }
+
+    function closeInvoiceModal() {
+      document.getElementById('modal-invoice').classList.add('hidden');
+      activeInvoiceTransaction = null;
+    }
+
+    function printInvoiceDirect() {
+      window.print();
+    }
+
+    function shareInvoiceViaWhatsApp() {
+      if (!activeInvoiceTransaction) return;
+      const item = activeInvoiceTransaction;
+      const phone = (item.customerPhone || '').replace(/\D/g, '');
+      const cleanPhone = phone.length === 10 ? phone : (phone.length === 12 && phone.startsWith('91') ? phone.slice(2) : '');
+
+      const timeStr = formatDateTime(item.timestamp);
+      const receiptNo = item.referenceNo || `CSC-REC-${item.id.slice(-4)}`;
+
+      // Polite Gujarati WhatsApp Message Template
+      const msg = `🙏 *જન સેવા કેન્દ્ર - ડિજિટલ પાવતી* 🙏
+━━━━━━━━━━━━━━━━━━━━
+🏢 *કેન્દ્ર:* ${profile.centerName}
+👤 *VLE સંચાલક:* ${profile.vleName} (CSC ID: ${profile.cscId})
+🧾 *પાવતી નં:* ${receiptNo}
+📅 *તારીખ:* ${timeStr.date} ${timeStr.time}
+━━━━━━━━━━━━━━━━━━━━
+👤 *ગ્રાહકનું નામ:* ${item.customerName || 'ગ્રાહક'}
+📋 *સેવા:* ${item.category}
+🔢 *અરજી/રેફ નં:* ${item.referenceNo || '-'}
+💵 *ચૂકવેલ રકમ:* ₹${Number(item.amount).toLocaleString('en-IN')}
+💳 *પેમેન્ટ મોડ:* ${item.mode}
+━━━━━━━━━━━━━━━━━━━━
+✅ આપનું કામ સફળતાપૂર્વક નોંધાયેલ છે.
+ધન્યવાદ! ફરી પધારશો.
+📞 હેલ્પલાઇન: ${profile.mobile}`;
+
+      let url = "";
+      if (cleanPhone) {
+        url = `https://api.whatsapp.com/send?phone=91${cleanPhone}&text=${encodeURIComponent(msg)}`;
+      } else {
+        url = `https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
+      }
+      window.open(url, '_blank');
+    }
+
+    // --- Smart Voice Input & Gujarati Regex NLP Parser ---
+    function openVoiceModal() {
+      const modal = document.getElementById('modal-voice');
+      const textDisplay = document.getElementById('voice-recognized-text');
+      modal.classList.remove('hidden');
+      textDisplay.textContent = "સાંભળી રહ્યું છે... બોલો...";
+
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        textDisplay.textContent = "આ બ્રાઉઝરમાં સ્પીચ રેકગ્નિશન સપોર્ટેડ નથી. કૃપા કરીને Chrome અથવા Android WebView વાપરો.";
+        return;
+      }
+
+      try {
+        recognition = new SpeechRecognition();
+        recognition.lang = 'gu-IN';
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        recognition.onresult = function(event) {
+          const spokenText = event.results[0][0].transcript;
+          textDisplay.textContent = `બોલ્યા: "${spokenText}"`;
+          setTimeout(() => {
+            parseAndApplyGujaratiVoice(spokenText);
+          }, 1000);
+        };
+
+        recognition.onerror = function(event) {
+          console.warn("Speech error:", event.error);
+          textDisplay.textContent = "અવાજ ઓળખવામાં ભૂલ થઈ. કૃપા કરીને ફરી પ્રયાસ કરો.";
+        };
+
+        recognition.start();
+      } catch (err) {
+        textDisplay.textContent = "માઇક્રોફોન શરુ થઈ શક્યું નથી.";
+      }
+    }
+
+    function stopVoiceRecognition() {
+      if (recognition) {
+        try { recognition.stop(); } catch(e){}
+      }
+      closeVoiceModal();
+    }
+
+    function closeVoiceModal() {
+      document.getElementById('modal-voice').classList.add('hidden');
+    }
+
+    // Regex Parser for Gujarati phrases
+    function parseAndApplyGujaratiVoice(text) {
+      closeVoiceModal();
+
+      const lower = text.toLowerCase();
+      let type = 'INCOME';
+      let category = 'Aadhaar Update';
+      let amount = 0;
+      let mode = 'Cash';
+      let customer = '';
+
+      // Type determination: expense vs income
+      if (lower.includes('ખર્ચ') || lower.includes('લાવ્યા') || lower.includes('ચૂકવ્યા') || lower.includes('ભાડું') || lower.includes('બિલ')) {
+        type = 'EXPENSE';
+      }
+
+      // Extract Amount (e.g. 200, 50, 500)
+      const numMatch = text.match(/\d+/);
+      if (numMatch) {
+        amount = parseInt(numMatch[0], 10);
+      } else {
+        if (text.includes('સો')) amount = 100;
+        if (text.includes('બેસો')) amount = 200;
+        if (text.includes('ત્રણસો')) amount = 300;
+        if (text.includes('પાંચસો')) amount = 500;
+      }
+
+      // Extract Category
+      if (text.includes('આધાર')) category = 'Aadhaar Update';
+      else if (text.includes('પાન') || text.includes('pan')) category = 'PAN Card';
+      else if (text.includes('આયુષ્માન')) category = 'Ayushman Card';
+      else if (text.includes('કિસાન')) category = 'PM Kisan';
+      else if (text.includes('રોકડ ઉપાડ') || text.includes('aeps') || text.includes('ઉપાડ્યા')) category = 'AEPS Cash Withdrawal';
+      else if (text.includes('કાગળ') || text.includes('રીમ') || text.includes('paper')) { category = 'Paper Rim'; type = 'EXPENSE'; }
+      else if (text.includes('શાહી') || text.includes('ટોનર') || text.includes('cartridge')) { category = 'Cartridge / Toner Refill'; type = 'EXPENSE'; }
+      else if (text.includes('ચા') || text.includes('નાસ્તો')) { category = 'Tea & Snacks'; type = 'EXPENSE'; }
+      else if (text.includes('લાઈટબિલ') || text.includes('બિલ')) category = 'Bill Payment';
+      else if (text.includes('ઝેરોક્ષ') || text.includes('પ્રિન્ટ')) category = 'Xerox & Print';
+
+      // Mode detection
+      if (text.includes('ઓનલાઇન') || text.includes('upi') || text.includes('gpay') || text.includes('ફોનપે') || text.includes('પેટીએમ')) {
+        mode = 'UPI / QR';
+      } else {
+        mode = 'Cash';
+      }
+
+      // Customer name extraction (look for common Gujarati suffixes like ભાઈ, બેન)
+      const words = text.split(/\s+/);
+      for (let i = 0; i < words.length; i++) {
+        if (words[i].includes('ભાઈ') || words[i].includes('બેન') || words[i].includes('નું')) {
+          customer = words[i].replace(/[નુંનાને]/g, '');
+          break;
+        }
+      }
+
+      // Open Transaction Modal with pre-filled fields
+      openAddTransactionModal(type);
+      if (amount > 0) document.getElementById('modal-field-amount').value = amount;
+      document.getElementById('modal-field-category').value = category;
+      document.getElementById('modal-field-mode').value = mode;
+      if (customer) document.getElementById('modal-field-customer').value = customer;
+      document.getElementById('modal-field-notes').value = `અવાજ દ્વારા: "${text}"`;
+
+      showToast("અવાજ ઓળખાઈ ગયો! ફોર્મ ચકાસી સાચવો.", "info");
+    }
+
+    // --- Analytics & Charts ---
+    function renderAnalyticsCharts() {
+      // 1. Monthly Trends (Jan - Dec 2026)
+      const months = ['જાન્યુ', 'ફેબ્રુ', 'માર્ચ', 'એપ્રિલ', 'મે', 'જૂન', 'જુલાઈ', 'ઓગસ્ટ', 'સપ્ટે', 'ઓક્ટો', 'નવે', 'ડિસે'];
+      const monthlyIncome = new Array(12).fill(0);
+      const monthlyExpense = new Array(12).fill(0);
+
+      // Category breakdown counts & amounts
+      const categoryTotals = {};
+
+      transactions.forEach(t => {
+        const d = new Date(t.timestamp);
+        const m = d.getMonth();
+        const amt = Number(t.amount || 0);
+
+        if (t.type === 'INCOME') {
+          monthlyIncome[m] += amt;
+          categoryTotals[t.category] = (categoryTotals[t.category] || 0) + amt;
+        } else {
+          monthlyExpense[m] += amt;
+        }
+      });
+
+      // Render Bar Chart
+      const trendCtx = document.getElementById('monthlyTrendChart')?.getContext('2d');
+      if (trendCtx) {
+        if (monthlyChart) monthlyChart.destroy();
+        monthlyChart = new Chart(trendCtx, {
+          type: 'bar',
+          data: {
+            labels: months,
+            datasets: [
+              {
+                label: 'આવક (Income ₹)',
+                data: monthlyIncome,
+                backgroundColor: 'rgba(16, 185, 129, 0.8)',
+                borderRadius: 6
+              },
+              {
+                label: 'ખર્ચ (Expense ₹)',
+                data: monthlyExpense,
+                backgroundColor: 'rgba(244, 63, 94, 0.8)',
+                borderRadius: 6
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                labels: { color: '#cbd5e1', font: { family: 'Plus Jakarta Sans' } }
+              }
+            },
+            scales: {
+              x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+              y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } }
+            }
+          }
+        });
+      }
+
+      // Render Doughnut Chart
+      const doughnutCtx = document.getElementById('categoryDoughnutChart')?.getContext('2d');
+      if (doughnutCtx) {
+        if (categoryChart) categoryChart.destroy();
+
+        const catLabels = Object.keys(categoryTotals);
+        const catValues = Object.values(categoryTotals);
+
+        categoryChart = new Chart(doughnutCtx, {
+          type: 'doughnut',
+          data: {
+            labels: catLabels.length > 0 ? catLabels : ['કોઈ આવક નથી'],
+            datasets: [{
+              data: catValues.length > 0 ? catValues : [1],
+              backgroundColor: [
+                '#38bdf8', '#10b981', '#fbbf24', '#f43f5e', '#a855f7', '#f97316', '#06b6d4', '#ec4899'
+              ],
+              borderWidth: 2,
+              borderColor: '#0e172a'
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom',
+                labels: { color: '#cbd5e1', boxWidth: 12, font: { size: 10 } }
+              }
+            }
+          }
+        });
+      }
+
+      // Render Top Services Grid
+      const grid = document.getElementById('top-services-grid');
+      if (grid) {
+        grid.innerHTML = '';
+        const sortedCats = Object.entries(categoryTotals).sort((a, b) => b[1] - a[1]);
+        if (sortedCats.length === 0) {
+          grid.innerHTML = '<p class="text-xs text-slate-500 col-span-4 text-center">હજુ સુધી કોઈ આવક નોંધાયેલ નથી.</p>';
+        } else {
+          sortedCats.slice(0, 4).forEach(([cat, total]) => {
+            const div = document.createElement('div');
+            div.className = "p-3 rounded-xl bg-slate-900 border border-white/5 flex items-center justify-between";
+            div.innerHTML = `
+              <div>
+                <p class="text-xs font-bold text-white">${escapeHtml(cat)}</p>
+                <p class="text-[11px] text-slate-400">કુલ આવક</p>
+              </div>
+              <span class="text-sm font-extrabold text-csc-sky font-mono">₹${total.toLocaleString('en-IN')}</span>
+            `;
+            grid.appendChild(div);
+          });
+        }
+      }
+    }
+
+    // --- Settings & Center Profile ---
+    function loadSettingsInputs() {
+      document.getElementById('set-center-name').value = profile.centerName || '';
+      document.getElementById('set-vle-name').value = profile.vleName || '';
+      document.getElementById('set-csc-id').value = profile.cscId || '';
+      document.getElementById('set-mobile').value = profile.mobile || '';
+      document.getElementById('set-upi-id').value = profile.upiId || '';
+      document.getElementById('set-opening-cash').value = profile.openingCash || 0;
+      document.getElementById('set-opening-bank').value = profile.openingBank || 0;
+      document.getElementById('set-address').value = profile.address || '';
+    }
+
+    function saveProfileSettings(e) {
+      e.preventDefault();
+      profile = {
+        centerName: document.getElementById('set-center-name').value.trim(),
+        vleName: document.getElementById('set-vle-name').value.trim(),
+        cscId: document.getElementById('set-csc-id').value.trim(),
+        mobile: document.getElementById('set-mobile').value.trim(),
+        upiId: document.getElementById('set-upi-id').value.trim(),
+        openingCash: parseFloat(document.getElementById('set-opening-cash').value) || 0,
+        openingBank: parseFloat(document.getElementById('set-opening-bank').value) || 0,
+        address: document.getElementById('set-address').value.trim()
+      };
+
+      setStoredData('csc_profile', profile);
+      updateHeaderProfile();
+      renderDashboard();
+      showToast("પ્રોફાઈલ સેટિંગ્સ સફળતાપૂર્વક સાચવાઈ ગયા!", "success");
+    }
+
+    function updateHeaderProfile() {
+      document.getElementById('header-center-name').textContent = profile.centerName;
+      document.getElementById('header-vle-name').textContent = profile.vleName;
+      document.getElementById('header-csc-id').textContent = profile.cscId;
+    }
+
+    // --- Export & Backup Functions ---
+    function exportToCsv() {
+      if (transactions.length === 0) {
+        alert("એક્સપોર્ટ કરવા માટે કોઈ ડેટા નથી!");
+        return;
+      }
+      let csv = "ID,Type,Category,Amount,PaymentMode,CustomerName,CustomerPhone,ReferenceNo,Notes,Timestamp,Date\n";
+      transactions.forEach(t => {
+        const d = new Date(t.timestamp).toISOString();
+        csv += `"${t.id}","${t.type}","${t.category}",${t.amount},"${t.mode}","${t.customerName || ''}","${t.customerPhone || ''}","${t.referenceNo || ''}","${(t.notes || '').replace(/"/g, '""')}",${t.timestamp},"${d}"\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', `CSC_Khata_Register_${new Date().toISOString().slice(0, 10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast("CSV ફાઇલ ડાઉનલોડ થઈ ગઈ!", "success");
+    }
+
+    function printDayBook() {
+      window.print();
+    }
+
+    function exportFullJsonBackup() {
+      const data = {
+        profile,
+        transactions,
+        exportedAt: new Date().toISOString()
+      };
+      const jsonStr = JSON.stringify(data, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `CSC_Backup_${profile.cscId}_${Date.now()}.json`;
+      link.click();
+      showToast("સંપૂર્ણ બેકઅપ ફાઈલ સેવ થઈ ગઈ!", "success");
+    }
+
+    function importFullJsonBackup(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const imported = JSON.parse(e.target.result);
+          if (imported.profile && Array.isArray(imported.transactions)) {
+            profile = imported.profile;
+            transactions = imported.transactions;
+            setStoredData('csc_profile', profile);
+            setStoredData('csc_transactions', transactions);
+            updateHeaderProfile();
+            renderDashboard();
+            showToast("ડેટા સફળતાપૂર્વક રીસ્ટોર થયો!", "success");
+          } else {
+            alert("અમાન્ય બેકઅપ ફાઈલ!");
+          }
+        } catch(err) {
+          alert("ફાઈલ વાંચવામાં ભૂલ થઈ!");
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function resetToSampleData() {
+      if (confirm("શું તમે ખરેખર નમૂના ડેમો ડેટા રીસેટ કરવા માંગો છો?")) {
+        transactions = [...SAMPLE_TRANSACTIONS];
+        profile = { ...DEFAULT_PROFILE };
+        setStoredData('csc_transactions', transactions);
+        setStoredData('csc_profile', profile);
+        updateHeaderProfile();
+        renderDashboard();
+        showToast("ડેમો ડેટા રીસેટ થયો!", "info");
+      }
+    }
+
+    // --- Utility Helpers ---
+    function formatDateTime(ts) {
+      const d = new Date(ts);
+      const dateStr = d.toLocaleDateString('gu-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+      const timeStr = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+      return { date: dateStr, time: timeStr };
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function getCategoryIconInfo(catName, type) {
+      if (type === 'INCOME') {
+        const found = SERVICE_CATEGORIES.find(c => c.name === catName);
+        return found ? { icon: found.icon, color: found.color } : { icon: 'fa-file-invoice-dollar', color: '#10b981' };
+      } else {
+        const found = EXPENSE_CATEGORIES.find(c => c.name === catName);
+        return found ? { icon: found.icon, color: '#f43f5e' } : { icon: 'fa-arrow-up-right-dots', color: '#f43f5e' };
+      }
+    }
+
+    function numberToGujaratiWords(num) {
+      const n = Math.floor(num);
+      if (n === 50) return "પચાસ રૂપિયા પૂરા / Fifty Rupees Only";
+      if (n === 100) return "એક સો રૂપિયા પૂરા / One Hundred Rupees Only";
+      if (n === 150) return "એક સો પચાસ રૂપિયા પૂરા / One Hundred Fifty Rupees Only";
+      if (n === 200) return "બે સો રૂપિયા પૂરા / Two Hundred Rupees Only";
+      if (n === 500) return "પાંચ સો રૂપિયા પૂરા / Five Hundred Rupees Only";
+      return `${n} રૂપિયા પૂરા / ${n} Rupees Only`;
+    }
+
+    function showToast(msg, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `px-4 py-2.5 rounded-xl text-xs font-bold text-white shadow-xl flex items-center gap-2 transform transition-all duration-300 pointer-events-auto ${
+        type === 'success' ? 'bg-emerald-600 border border-emerald-400' :
+        type === 'error' ? 'bg-rose-600 border border-rose-400' :
+        'bg-slate-800 border border-white/10'
+      }`;
+      toast.innerHTML = `
+        <i class="fa-solid ${type === 'success' ? 'fa-circle-check text-emerald-200' : type === 'error' ? 'fa-triangle-exclamation' : 'fa-circle-info text-csc-sky'}"></i>
+        <span>${escapeHtml(msg)}</span>
+      `;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(10px)';
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    // Live Date/Time in Header
+    function updateDateTimeDisplay() {
+      const now = new Date();
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      const dateGuj = now.toLocaleDateString('gu-IN', options);
+      const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+      const el = document.getElementById('current-datetime-display');
+      if (el) el.textContent = `${dateGuj} | ${timeStr}`;
+    }
+
+    // --- App Initialization ---
+    window.addEventListener('DOMContentLoaded', () => {
+      checkAuthGate();
+      updateHeaderProfile();
+      updateDateTimeDisplay();
+      setInterval(updateDateTimeDisplay, 60000);
+      populateCategoryDropdown();
+      renderDashboard();
+    });
+
+  </script>
+</body>
+</html>

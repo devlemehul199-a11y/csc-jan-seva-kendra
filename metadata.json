@@ -1,0 +1,6 @@
+{
+  "name": "CSC Digital Khata",
+  "description": "Daily Day-Book, Cash Register & Expense Tracker for CSC VLEs and Jan Seva Kendra owners with Gujarati, Hindi & English support.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
